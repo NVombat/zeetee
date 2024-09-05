@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "rgp-solver"
+version = "0.1.0"
+description = "#TODO"
+authors = ["NVombat <nvombatkere@gmail.com>"]
+readme = "README.md"
+packages = [
+    { include = "src" }
+]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.include]
+# Include all JSON files in the assets directory
+"src/assets/*.json" = "src/assets"
