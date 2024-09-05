@@ -1,2 +1,0 @@
-# zeetee
-Zero Trust
