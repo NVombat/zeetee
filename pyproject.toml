@@ -7,15 +7,16 @@ readme = "README.md"
 packages = [
     { include = "src" }
 ]
+include = [
+    "src/assets/*.json"
+]
 
 [tool.poetry.dependencies]
 python = "^3.11"
+jsonschema = "^4.23.0"
+python-sat = {extras = ["aiger", "approxmc", "cryptosat", "pblib"], version = "^1.8.dev13"}
 
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
-
-[tool.poetry.include]
-# Include all JSON files in the assets directory
-"src/assets/*.json" = "src/assets"
