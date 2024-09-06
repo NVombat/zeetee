@@ -1,7 +1,11 @@
+import sys
 from pysat.solvers import Glucose3, Solver
 
-from converter import *
 from logger import create_logger
+from helper import get_file_path
+from er_encoder import rgp_to_sat_er
+from mb_encoder import rgp_to_sat_mb
+from converter import json_to_rgp, extract_clauses
 
 logger = create_logger(l_name="zt_solver")
 
@@ -41,12 +45,12 @@ def solve(enc_type: int, solver_flag: int, rgp_instance: dict) -> dict:
     logger.debug("Converting Instance...")
 
     if enc_type == 1:
-        sat_obj = rgp_to_sat_e1(rgp_instance)
-        logger.info(f"SAT Object [Encoding 1]: {sat_obj}")
+        sat_obj = rgp_to_sat_mb(rgp_instance)
+        logger.info(f"SAT Object [MB-ENCODER]: {sat_obj}")
 
     elif enc_type == 2:
-        sat_obj = rgp_to_sat_e2(rgp_instance)
-        logger.info(f"SAT Object [Encoding 2]: {sat_obj}")
+        sat_obj = rgp_to_sat_er(rgp_instance)
+        logger.info(f"SAT Object [ER-ENCODER]: {sat_obj}")
 
     clauses = extract_clauses(sat_obj)
 

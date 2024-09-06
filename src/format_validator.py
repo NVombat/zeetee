@@ -3,7 +3,7 @@ import json
 import jsonschema
 from jsonschema import validate, Draft7Validator
 
-from converter import *
+from logger import create_logger
 from helper import get_file_path
 
 logger = create_logger(l_name="zt_fmt_validator")
