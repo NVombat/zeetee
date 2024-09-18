@@ -92,26 +92,6 @@ def partition_array_into_k_groups(elements: list, k: int) -> list:
     return groups
 
 
-def generate_positive_instance() -> dict:
-    '''
-    Generates a positive RGP Instance
-
-    Args:
-
-    Returns:
-    '''
-
-
-def generate_negative_instance() -> dict:
-    '''
-    Generates a negative RGP Instance
-
-    Args:
-
-    Returns:
-    '''
-
-
 def write_to_file(rgp_instances: dict, json_file_name: str) -> None:
     '''
     Writes RGP Instances to file
@@ -171,7 +151,27 @@ def find_num_groups_involved(elements: list, partitions: list) -> int:
     return num_groups
 
 
-def generate_constraints(instance_config: dict, elements: list, partitions: list) -> tuple:
+def generate_positive_constraints() -> tuple:
+    '''
+    Generates positive constraints
+
+    Args:
+
+    Returns:
+    '''
+
+
+def generate_negative_constraints() -> tuple:
+    '''
+    Generates negative constraints
+
+    Args:
+
+    Returns:
+    '''
+
+
+def generate_random_constraints(instance_config: dict, elements: list, partitions: list) -> tuple:
     '''
     Randomly generate usability and security constraints
 
@@ -241,12 +241,12 @@ def generate_constraints(instance_config: dict, elements: list, partitions: list
 
 def generate_rgp_instances(flag: int, n=10, cst_size_type="fixed", n_cst=10, cst_size=3, num_instance=5) -> dict:
     '''
-    Generate positive and negative RGP instances based on
-    flag = 0 [negative] or 1 [positive], convert them to
-    a JSON object and write them to a .json file.
+    Generate positive, negative or random RGP instances based on a
+    flag = 0 [negative], 1 [positive] or 2 [random], convert them
+    to a JSON object and write them to a .json file.
 
     Args:
-        flag: 0/1 for negative or positive instances
+        flag: 0/1/2 for negative, positive or random instances
         n: Number of resources in each instance
         cst_size_type: Constraint Size Type [Random/Fixed]
         n_cst: Number of constraints
@@ -263,8 +263,8 @@ def generate_rgp_instances(flag: int, n=10, cst_size_type="fixed", n_cst=10, cst
         4. [[s], 'le', k+1] -> UC
         5. [[s], 'ge', k-1] -> SC
     '''
-    if not isinstance(flag, int) or flag not in [0, 1]:
-        logger.error(f"Flag {flag} must be an integer that is either 0 or 1 ")
+    if not isinstance(flag, int) or flag not in [0, 1, 2]:
+        logger.error(f"Flag {flag} must be an integer that is either 0, 1 or 2")
         sys.exit(1)
 
     rgp_instances = {}
@@ -292,7 +292,14 @@ def generate_rgp_instances(flag: int, n=10, cst_size_type="fixed", n_cst=10, cst
 
         partitioned_groups = partition_array_into_k_groups(elements, t)
 
-        uc,sc = generate_constraints(instance_config, elements, partitioned_groups)
+        if flag == 0: # Negative
+            uc,sc = generate_negative_constraints()
+
+        elif flag == 1: # Positive
+            uc,sc = generate_positive_constraints()
+
+        elif flag == 2: # Random
+            uc,sc = generate_random_constraints(instance_config, elements, partitioned_groups)
 
         inst["uc"] = uc
         inst["sc"] = sc
@@ -304,16 +311,9 @@ def generate_rgp_instances(flag: int, n=10, cst_size_type="fixed", n_cst=10, cst
 
     logger.debug(f"Generated RGP Instances: {rgp_instances}")
 
-    fkey = ""
-
-    if flag == 0: # Negative
-        fkey = "neg"
-
-    elif flag == 1: # Positive
-        fkey = "pos"
-
-    json_file_name = "rgp_gen_" + fkey + ".json"
+    json_file_name = "rgp_gen_" + str(flag) + ".json"
     json_file_path = get_file_path("testfiles", json_file_name)
+
     write_to_file(rgp_instances, json_file_path)
 
     return rgp_instances
@@ -322,4 +322,4 @@ def generate_rgp_instances(flag: int, n=10, cst_size_type="fixed", n_cst=10, cst
 if __name__ == "__main__":
     logger.info("********************GENERATOR[LOCAL_TESTING]*********************")
 
-    rgp_instances = generate_rgp_instances(flag=1, n=10)
+    rgp_instances = generate_rgp_instances(flag=2, n=10)
