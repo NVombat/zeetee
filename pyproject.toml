@@ -11,6 +11,7 @@ include = [
     "src/assets/*.json"
 ]
 
+
 [tool.poetry.dependencies]
 python = "^3.11"
 jsonschema = "^4.23.0"
@@ -20,3 +21,7 @@ python-sat = {extras = ["aiger", "approxmc", "cryptosat", "pblib"], version = "^
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+
+[tool.poetry.scripts]
+run-tests = "run_tests:run_tests"
