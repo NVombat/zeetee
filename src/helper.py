@@ -1,3 +1,4 @@
+import itertools
 import os
 
 
@@ -40,3 +41,16 @@ def get_file_path(foldername: str, filename: str, ) -> str:
     file_path = os.path.join(data_dir, filename)
 
     return file_path
+
+
+def generate_unique_pairs(arr: list) -> list:
+    '''
+    Generate all unique pairs of elements from an array
+
+    Args:
+        arr: Array of elements
+
+    Returns:
+        list: A list of all the unique pairs generated
+    '''
+    return list(itertools.combinations(arr, 2))
