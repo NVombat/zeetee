@@ -444,7 +444,7 @@ def rgp_to_sat_er(rgp_obj: dict) -> dict:
             logger.debug(f"[SC] Y[{r},{p}] Clauses: {cnf_clauses}")
 
             # Updating literal count
-            if cnf_uc.nv != 0:
+            if cnf_sc.nv != 0:
                 lit_cnt = cnf_sc.nv
 
             logger.debug(f"UPDATED LITERAL COUNT: {lit_cnt}")
