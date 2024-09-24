@@ -2,7 +2,7 @@ import unittest
 
 from src.helper import get_file_path, get_key_by_value
 
-class TestConverter(unittest.TestCase):
+class TestHelper(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):

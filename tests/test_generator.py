@@ -9,7 +9,7 @@ from src.generator import (
     generate_rgp_instances
 )
 
-class TestFormatValidator(unittest.TestCase):
+class TestGenerator(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
