@@ -14,6 +14,10 @@ pos_jfp = get_file_path("testfiles", "rgp_test_pos.json")
 neg_jfp = get_file_path("testfiles", "rgp_test_neg.json")
 small_jfp = get_file_path("testfiles", "rgp_test_small.json")
 
+test_path_neg = get_file_path("testfiles", "rgp_gen_0.json")
+test_path_pos = get_file_path("testfiles", "rgp_gen_1.json")
+test_path_random = get_file_path("testfiles", "rgp_gen_2.json")
+
 
 def solve(enc_type: int, solver_flag: int, rgp_instance: dict) -> dict:
     '''
@@ -85,7 +89,7 @@ if __name__ == "__main__":
     cl_args = sys.argv
 
     if len(cl_args) != 3:
-        logger.error("Usage: python converter.py enc_type solver [enc_type must be an integer and must be either 1 or 2; solver must be an integer and must be between 1 and 10]")
+        logger.error("Usage: python solver.py enc_type solver [enc_type must be an integer and must be either 1 or 2; solver must be an integer and must be between 1 and 10]")
         sys.exit(1)
 
     logger.debug(f"Command Line Args: {cl_args}")
@@ -98,7 +102,7 @@ if __name__ == "__main__":
             raise ValueError
 
     except ValueError:
-        logger.error("Usage: python converter.py enc_type solver [enc_type must be an integer and must be either 1 or 2; solver must be an integer and must be between 1 and 10]")
+        logger.error("Usage: python solver.py enc_type solver [enc_type must be an integer and must be either 1 or 2; solver must be an integer and must be between 1 and 10]")
         sys.exit(1)
 
     logger.info(f"Encoding Type is set to {enc_type}... Solver is set to {slv_flag}...")
@@ -107,7 +111,11 @@ if __name__ == "__main__":
     # rgp_instances = json_to_rgp()
     # rgp_instances = json_to_rgp(pos_jfp)
     # rgp_instances = json_to_rgp(neg_jfp)
-    rgp_instances = json_to_rgp(small_jfp)
+    # rgp_instances = json_to_rgp(small_jfp)
+
+    rgp_instances = json_to_rgp(test_path_neg)
+    # rgp_instances = json_to_rgp(test_path_pos)
+    # rgp_instances = json_to_rgp(test_path_random)
 
     # Call the SAT Solver on each instance
     for inst in rgp_instances:
