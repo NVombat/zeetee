@@ -59,6 +59,8 @@ def rgp_to_sat_er(rgp_obj: dict) -> dict:
     clause_size_uc = {}
     b_val_uc = {}
 
+    lit_map_uc_index = 1
+
     for c1 in uc:
         logger.debug(f"Constraint: {c1}")
         # create a literal for every constraint and for every resource within that constraint
@@ -71,12 +73,20 @@ def rgp_to_sat_er(rgp_obj: dict) -> dict:
 
         literal_map = {}
         for i in range (1, lr+1): # for every resource within a constraint
-            val = ((uc.index(c1)+1),i) # val = [r,p]
+            # Duplicate Elements return the same index but should return different indices
+            # val = ((uc.index(c1)+1),i) # val = [r,p]
+
+            val = (lit_map_uc_index,i) # val = [r,p]
             literal_map[lit_id] = val
             lit_id = lit_id+1
 
         logger.debug(f"Literal Map: {literal_map}")
-        literal_mappings_uc[(uc.index(c1)+1)] = literal_map # stores literal mappings of uc
+
+        # Duplicate Elements return the same index but should return different indices
+        # literal_mappings_uc[(uc.index(c1)+1)] = literal_map # stores literal mappings of uc
+
+        literal_mappings_uc[lit_map_uc_index] = literal_map # stores literal mappings of uc
+        lit_map_uc_index = lit_map_uc_index+1
 
     sat_obj["literal_mappings_uc"] = literal_mappings_uc
     sat_obj["clause_size_uc"] = clause_size_uc
@@ -90,6 +100,8 @@ def rgp_to_sat_er(rgp_obj: dict) -> dict:
     clause_size_sc = {}
     b_val_sc = {}
 
+    lit_map_sc_index = 1
+
     for c2 in sc:
         logger.debug(f"Constraint: {c2}")
         # create a literal for every constraint and for every resource within that constraint
@@ -102,12 +114,20 @@ def rgp_to_sat_er(rgp_obj: dict) -> dict:
 
         literal_map = {}
         for i in range (1, lr+1): # for every resource within a constraint
-            val = ((sc.index(c2)+1),i) # val = [r,p]
+            # Duplicate Elements return the same index but should return different indices
+            # val = ((sc.index(c2)+1),i) # val = [r,p]
+
+            val = (lit_map_sc_index,i) # val = [r,p]
             literal_map[lit_id] = val
             lit_id = lit_id+1
 
         logger.debug(f"Literal Map: {literal_map}")
-        literal_mappings_sc[(sc.index(c2)+1)] = literal_map # stores literal mappings of sc
+
+        # Duplicate Elements return the same index but should return different indices
+        # literal_mappings_sc[(sc.index(c2)+1)] = literal_map # stores literal mappings of sc
+
+        literal_mappings_sc[lit_map_sc_index] = literal_map # stores literal mappings of sc
+        lit_map_sc_index = lit_map_sc_index+1
 
     sat_obj["literal_mappings_sc"] = literal_mappings_sc
     sat_obj["clause_size_sc"] = clause_size_sc
