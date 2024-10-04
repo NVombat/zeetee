@@ -5,8 +5,8 @@ import json
 import random
 from itertools import combinations
 
+from helper import get_file_path, generate_unique_pairs
 from logger import create_logger
-from helper import get_file_path
 
 logger = create_logger(l_name="zt_generator")
 
@@ -94,7 +94,7 @@ def partition_array_into_k_groups(elements: list, k: int) -> list:
 
 def write_to_file(rgp_instances: dict, json_file_name: str) -> None:
     '''
-    Writes RGP Instances to file
+    Writes (Appends) RGP Instances to file
 
     Args:
         rgp_instances: Dictionary of RGP Instances
@@ -151,37 +151,31 @@ def find_num_groups_involved(elements: list, partitions: list) -> int:
     return num_groups
 
 
-def generate_positive_constraints() -> tuple:
+def generate_constraints(instance_config: dict, elements: list, partitions: list, flag: int) -> tuple:
     '''
-    Generates positive constraints
-
-    Args:
-
-    Returns:
-    '''
-
-
-def generate_negative_constraints() -> tuple:
-    '''
-    Generates negative constraints
-
-    Args:
-
-    Returns:
-    '''
-
-
-def generate_random_constraints(instance_config: dict, elements: list, partitions: list) -> tuple:
-    '''
-    Randomly generate usability and security constraints
+    Randomly generate satisfiable [positive] or unsatisfiable [negative]
+    usability and security constraints based on the flag provided
 
     Args:
         instance_config: Configuration details of the instance [Metadata]
         elements: List of all elements
         partitions: The list of partitions of elements
+        flag: 0/1 for negative/positive constraints
 
     Returns:
         tuple: A tuple containing the UC and SC
+
+    Algorithm:
+        FOR SAT CONSTRAINTS:
+        1. Select 's' elements from n resources
+        2. Put them into a constraint array
+        3. Find out how many groups were involved (k value = # of groups)
+        4. [[s], 'le', k+1] -> UC
+        5. [[s], 'ge', k-1] -> SC
+        6. If flag == 0: FOR UNSAT CONSTRAINTS
+            7. Select 'k' elements from the n resources
+            8. Generate unsat SC of fixed size [2] with every pair of elements of the form {(1,2), ge, 2}
+            9. Generate unsat UC of the form {(1,2,...,k), le, k-1}
     '''
     num_resources = instance_config['num_resources']
     num_constraints = instance_config['num_constraints']
@@ -194,7 +188,7 @@ def generate_random_constraints(instance_config: dict, elements: list, partition
     uc = []
     sc = []
 
-    for i in range (1,num_constraints+1):
+    for i in range (1, num_constraints+1):
         # [[s],op,b]
         constraint = []
 
@@ -233,20 +227,53 @@ def generate_random_constraints(instance_config: dict, elements: list, partition
 
         logger.debug(f"Constraint {i}:  {constraint}")
 
+    if flag == 0:
+        # Generate unsatisfiable constraints
+        k = random.randint(num_resources//3, num_resources)
+        logger.debug(f"K Element Selection for Complete Graph Unsatisfiability: {k}")
+
+        neg_elements = list(random.sample(elements, k))
+        neg_elements.sort()
+        logger.debug(f"K Elements Selected for Complete Graph Unsatisfiability: {neg_elements}")
+
+        neg_uc = [neg_elements, 'le', k-1]
+        logger.debug(f"Negative Usability Constraint:  {neg_uc}")
+        uc.append(neg_uc)
+
+        unique_pairs = generate_unique_pairs(neg_elements)
+        num_neg_sc = len(unique_pairs)
+
+        neg_sc_bval = 2
+
+        for i in range(0, num_neg_sc):
+            constraint = []
+
+            # Add elements to constraint
+            constraint_elements = list(unique_pairs[i])
+            constraint_elements.sort()
+
+            constraint.append(constraint_elements)
+            constraint.append('ge')
+            constraint.append(neg_sc_bval)
+
+            sc.append(constraint)
+
+            logger.debug(f"Negative Security Constraint {i}:  {constraint}")
+
     logger.debug(f"Final UC Generated: {uc}")
     logger.debug(f"Final SC Generated: {sc}")
 
     return uc,sc
 
 
-def generate_rgp_instances(flag: int, n=10, cst_size_type="fixed", n_cst=10, cst_size=3, num_instance=5) -> dict:
+def generate_rgp_instances(flag: int, n=10, cst_size_type="fixed", n_cst=10, cst_size=3, num_instance=1) -> dict:
     '''
-    Generate positive, negative or random RGP instances based on a
-    flag = 0 [negative], 1 [positive] or 2 [random], convert them
-    to a JSON object and write them to a .json file.
+    Generate negative [UNSAT] or positive [SAT] RGP instances
+    based on a flag = 0 [negative] or 1 [positive], convert
+    them to a JSON object and write them to a .json file.
 
     Args:
-        flag: 0/1/2 for negative, positive or random instances
+        flag: 0/1 for negative or positive instances
         n: Number of resources in each instance
         cst_size_type: Constraint Size Type [Random/Fixed]
         n_cst: Number of constraints
@@ -255,16 +282,9 @@ def generate_rgp_instances(flag: int, n=10, cst_size_type="fixed", n_cst=10, cst
 
     Returns:
         dict: Containing "num_instances" instances
-
-    Algorithm:
-        1. Select 's' elements from n resources
-        2. Put them into a constraint array
-        3. Find out how many groups were involved (k value = # of groups)
-        4. [[s], 'le', k+1] -> UC
-        5. [[s], 'ge', k-1] -> SC
     '''
-    if not isinstance(flag, int) or flag not in [0, 1, 2]:
-        logger.error(f"Flag {flag} must be an integer that is either 0, 1 or 2")
+    if not isinstance(flag, int) or flag not in [0, 1]:
+        logger.error(f"Flag {flag} must be an integer that is either 0 or 1")
         sys.exit(1)
 
     rgp_instances = {}
@@ -293,13 +313,10 @@ def generate_rgp_instances(flag: int, n=10, cst_size_type="fixed", n_cst=10, cst
         partitioned_groups = partition_array_into_k_groups(elements, t)
 
         if flag == 0: # Negative
-            uc,sc = generate_negative_constraints()
+            uc,sc = generate_constraints(instance_config, elements, partitioned_groups, flag)
 
         elif flag == 1: # Positive
-            uc,sc = generate_positive_constraints()
-
-        elif flag == 2: # Random
-            uc,sc = generate_random_constraints(instance_config, elements, partitioned_groups)
+            uc,sc = generate_constraints(instance_config, elements, partitioned_groups, flag)
 
         inst["uc"] = uc
         inst["sc"] = sc
@@ -322,4 +339,5 @@ def generate_rgp_instances(flag: int, n=10, cst_size_type="fixed", n_cst=10, cst
 if __name__ == "__main__":
     logger.info("********************GENERATOR[LOCAL_TESTING]*********************")
 
-    rgp_instances = generate_rgp_instances(flag=2, n=10)
+    rgp_instances = generate_rgp_instances(flag=0, n=10)
+    # rgp_instances = generate_rgp_instances(flag=1, n=10)
