@@ -23,12 +23,6 @@ def generate_partition(n: int, k: int):
     Returns:
         list: Partition of n into k groups
     '''
-    # Generate all possible dividers
-    # dividers = list(combinations(range(1, n), k-1))
-    # logger.debug(f"Dividers: {dividers}")
-    # Select one divider at random
-    # ran_divider = random.sample(dividers, 1)
-
     # Randomly get one set of k-1 dividers without generating all possible sets
     ran_dividers = random.sample(range(1,n), k-1)
     ran_dividers.sort()
@@ -92,23 +86,28 @@ def partition_array_into_k_groups(elements: list, k: int) -> list:
     return groups
 
 
-def write_to_file(rgp_instances: dict, json_file_name: str) -> None:
+def write_to_file(rgp_instances: dict, json_file_name: str, mode="w") -> None:
     '''
     Writes (Appends) RGP Instances to file
 
     Args:
         rgp_instances: Dictionary of RGP Instances
         json_file_name: File name
+        mode: Mode of writing (write/append) [Default = "w"]
 
     Returns:
         None
     '''
+    if not isinstance(mode, str) or mode not in ["a", "w"]:
+        logger.error(f"Incorrect Mode of Writing to File: {mode} Must be a string that is either 'w' or 'a'!")
+        sys.exit(1)
+
     logger.debug(f"JSON Filename: {json_file_name}")
 
     try:
         json_obj = json.dumps(rgp_instances, indent=4)
 
-        with open(json_file_name, "a") as fh:
+        with open(json_file_name, mode) as fh:
             fh.write(json_obj)
             # json.dump(json_obj, fh)
 
@@ -172,12 +171,14 @@ def generate_constraints(instance_config: dict, elements: list, partitions: list
         3. Find out how many groups were involved (k value = # of groups)
         4. [[s], 'le', k+1] -> UC
         5. [[s], 'ge', k-1] -> SC
+
         6. If flag == 0: FOR UNSAT CONSTRAINTS
-            7. Select 'k' elements from the n resources
-            8. Generate unsat SC of fixed size [2] with every pair of elements of the form {(1,2), ge, 2}
-            9. Generate unsat UC of the form {(1,2,...,k), le, k-1}
+            6.1. Select all n elements
+            6.2. Generate unsat SC of fixed size [2] with every pair of elements of the form {(1,2), ge, 2}
+            6.3. Generate unsat UC of the form {(1,2,...,n), le, num_groups-1}
     '''
     num_resources = instance_config['num_resources']
+    num_groups = instance_config['num_groups']
     num_constraints = instance_config['num_constraints']
     constraint_size_type = instance_config['constraint_size_type']
 
@@ -229,21 +230,15 @@ def generate_constraints(instance_config: dict, elements: list, partitions: list
 
     if flag == 0:
         # Generate unsatisfiable constraints
-        k = random.randint(num_resources//3, num_resources)
-        logger.debug(f"K Element Selection for Complete Graph Unsatisfiability: {k}")
-
-        neg_elements = list(random.sample(elements, k))
-        neg_elements.sort()
-        logger.debug(f"K Elements Selected for Complete Graph Unsatisfiability: {neg_elements}")
-
-        neg_uc = [neg_elements, 'le', k-1]
+        neg_uc = [elements, 'le', num_groups-1]
         logger.debug(f"Negative Usability Constraint:  {neg_uc}")
         uc.append(neg_uc)
 
-        unique_pairs = generate_unique_pairs(neg_elements)
+        # unique_pairs = generate_unique_pairs(neg_elements)
+        unique_pairs = generate_unique_pairs(elements)
         num_neg_sc = len(unique_pairs)
 
-        neg_sc_bval = 2
+        neg_sc_bval = num_groups
 
         for i in range(0, num_neg_sc):
             constraint = []
@@ -266,7 +261,7 @@ def generate_constraints(instance_config: dict, elements: list, partitions: list
     return uc,sc
 
 
-def generate_rgp_instances(flag: int, n=10, cst_size_type="fixed", n_cst=10, cst_size=3, num_instance=1) -> dict:
+def generate_rgp_instances(flag: int, n=10, cst_size_type="fixed", n_cst=10, cst_size=3, num_instance=5) -> dict:
     '''
     Generate negative [UNSAT] or positive [SAT] RGP instances
     based on a flag = 0 [negative] or 1 [positive], convert
@@ -292,6 +287,7 @@ def generate_rgp_instances(flag: int, n=10, cst_size_type="fixed", n_cst=10, cst
     # Instance Meta Data
     instance_config = {
         "num_instances": num_instance,
+        "num_groups": 1,
         "num_resources": n,
         "num_constraints": n_cst,
         "constraint_size_type": cst_size_type,
@@ -310,7 +306,10 @@ def generate_rgp_instances(flag: int, n=10, cst_size_type="fixed", n_cst=10, cst
         inst["t"] = t
         logger.debug(f"Number of Groups: {t}")
 
+        instance_config["num_groups"] = t
+
         partitioned_groups = partition_array_into_k_groups(elements, t)
+        inst["partitions"] = partitioned_groups
 
         if flag == 0: # Negative
             uc,sc = generate_constraints(instance_config, elements, partitioned_groups, flag)
