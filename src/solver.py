@@ -17,6 +17,7 @@ small_jfp = get_file_path("testfiles", "rgp_test_small.json")
 test_path_neg = get_file_path("testfiles", "rgp_gen_0.json")
 test_path_pos = get_file_path("testfiles", "rgp_gen_1.json")
 
+
 def solve(enc_type: int, solver_flag: int, rgp_instance: dict) -> dict:
     '''
     Takes an encoding type and solver type passed
