@@ -1,4 +1,3 @@
-import sys
 from pysat.card import *
 
 from logger import create_logger
@@ -78,17 +77,11 @@ def rgp_to_sat_mb(rgp_obj: dict) -> dict:
 
         literal_map = {}
         for u in range (1, t+1): # for every group
-            # Duplicate Elements return the same index but should return different indices
-            # val = ((uc.index(c1)+1),u) # val = [r,u]
-
             val = (lit_map_uc_index,u) # val = [r,u]
             literal_map[lit_id] = val
             lit_id = lit_id+1
 
         logger.debug(f"Literal Map: {literal_map}")
-
-        # Duplicate Elements return the same index but should return different indices
-        # literal_mappings_uc[(uc.index(c1)+1)] = literal_map # stores literal mappings of uc
 
         literal_mappings_uc[lit_map_uc_index] = literal_map # stores literal mappings of uc
         lit_map_uc_index = lit_map_uc_index+1
@@ -119,17 +112,11 @@ def rgp_to_sat_mb(rgp_obj: dict) -> dict:
 
         literal_map = {}
         for u in range (1, t+1): # for every group
-            # Duplicate Elements return the same index but should return different indices
-            # val = ((sc.index(c2)+1),u) # val = [r,u]
-
             val = (lit_map_sc_index,u) # val = [r,u]
             literal_map[lit_id] = val
             lit_id = lit_id+1
 
         logger.debug(f"Literal Map: {literal_map}")
-
-        # Duplicate Elements return the same index but should return different indices
-        # literal_mappings_sc[(sc.index(c2)+1)] = literal_map # stores literal mappings of sc
 
         literal_mappings_sc[lit_map_sc_index] = literal_map # stores literal mappings of sc
         lit_map_sc_index = lit_map_sc_index+1
@@ -320,7 +307,7 @@ def rgp_to_sat_mb(rgp_obj: dict) -> dict:
         p_lim = clause_size_uc[r]
         logger.debug(f"[UC] Size of Clause {r}: {p_lim}")
 
-        uc_r = uc[r-1][0] # # Resources in constraint
+        uc_r = uc[r-1][0] # Resources in constraint
         logger.debug(f"[UC] Constraint: {uc_r}")
 
         for u in range (1, t+1):
@@ -497,8 +484,10 @@ def rgp_to_sat_mb(rgp_obj: dict) -> dict:
             logger.debug(f"UPDATED LITERAL COUNT: {lit_cnt}")
 
         elif b_val > len(card_literals_sc):
-            logger.error("[SC] Unsatisfiable Constraint")
-            sys.exit(1)
+            logger.error("[SC] Unsatisfiable Constraint: Generating UNSAT Clause...")
+
+            unsat_clause = [card_literals_sc[0], -card_literals_sc[0]]
+            cnf_clauses.append(unsat_clause)
 
         else:
             cnf_clauses = []
