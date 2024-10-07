@@ -1,7 +1,7 @@
 import os
 import logging
 
-from helper import get_file_path
+from .helper import get_file_path
 
 
 def create_logger(f_name="zt.log", l_name="zt_logger"):
