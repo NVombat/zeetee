@@ -1,21 +1,13 @@
 import sys
 from pysat.solvers import Cadical195, Maplesat
 
-from logger import create_logger
-from helper import get_file_path
-from er_encoder import rgp_to_sat_er
-from mb_encoder import rgp_to_sat_mb
-from converter import json_to_rgp, extract_clauses
+from . import *
+from .logger import create_logger
+from .er_encoder import rgp_to_sat_er
+from .mb_encoder import rgp_to_sat_mb
+from .converter import json_to_rgp, extract_clauses
 
 logger = create_logger(l_name="zt_runner")
-
-# JSON File Paths
-pos_jfp = get_file_path("testfiles", "rgp_test_pos.json")
-neg_jfp = get_file_path("testfiles", "rgp_test_neg.json")
-small_jfp = get_file_path("testfiles", "rgp_test_small.json")
-
-test_path_neg = get_file_path("testfiles", "rgp_gen_0.json")
-test_path_pos = get_file_path("testfiles", "rgp_gen_1.json")
 
 
 def run_experiment(enc_type: int, solver_flag: int, rgp_instance: dict):
@@ -63,14 +55,14 @@ def run_experiment(enc_type: int, solver_flag: int, rgp_instance: dict):
         # CADICAL
         logger.debug("Solver: CADICAL195")
 
-        with Cadical195(bootstrap_with=clauses) as solver:
+        with Cadical195(bootstrap_with=clauses, with_proof=True) as solver:
             satisfiable = solver.solve()
 
     elif solver_flag == 2:
         # MAPLESAT
         logger.debug("Solver: MapleSAT")
 
-        with Maplesat(bootstrap_with=clauses) as solver:
+        with Maplesat(bootstrap_with=clauses, with_proof=True) as solver:
             satisfiable = solver.solve()
 
     logger.debug(f"Satisfiable: {satisfiable}")
@@ -78,7 +70,9 @@ def run_experiment(enc_type: int, solver_flag: int, rgp_instance: dict):
     if satisfiable:
         logger.debug(f"Solution: {solver.get_model()}")
     else:
-        logger.debug("No satisfiable solution exists!")
+        logger.debug(f"No satisfiable solution exists: {solver.get_proof()}")
+
+    logger.debug(f"Accumulated Low Level Stats: {solver.accum_stats()}")
 
     res = {}
     res["status"] = satisfiable
