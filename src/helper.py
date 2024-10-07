@@ -1,5 +1,5 @@
-import itertools
 import os
+import itertools
 
 
 def get_key_by_value(dictionary, target_value):
