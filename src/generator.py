@@ -5,8 +5,8 @@ import json
 import random
 from itertools import combinations
 
-from helper import get_file_path, generate_unique_pairs
-from logger import create_logger
+from .logger import create_logger
+from .helper import get_file_path, generate_unique_pairs
 
 logger = create_logger(l_name="zt_generator")
 
