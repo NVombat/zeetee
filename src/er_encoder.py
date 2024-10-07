@@ -1,16 +1,11 @@
 from pysat.card import *
 
-from logger import create_logger
-from converter import json_to_rgp, extract_clauses
-from helper import get_key_by_value, get_file_path
+from . import *
+from .logger import create_logger
+from .helper import get_key_by_value
+from .converter import json_to_rgp, extract_clauses
 
 logger = create_logger(l_name="zt_er_encoder")
-
-# JSON File Paths
-default_jfp = get_file_path("testfiles", "rgp_hc.json")
-pos_jfp = get_file_path("testfiles", "rgp_test_pos.json")
-neg_jfp = get_file_path("testfiles", "rgp_test_neg.json")
-small_jfp = get_file_path("testfiles", "rgp_test_small.json")
 
 
 def rgp_to_sat_er(rgp_obj: dict) -> dict:
@@ -462,7 +457,12 @@ def rgp_to_sat_er(rgp_obj: dict) -> dict:
     clause_builder_card = []
     atleast_card_clauses = []
 
+    sat_obj["unsatisfiable"] = False
+
     for r in range (1, num_sc+1):
+        if sat_obj["unsatisfiable"]:
+            break
+
         temp_row_r = literal_mappings_sc[r]
         logger.debug(f"[SC] TEMP ROW R: {temp_row_r}")
 
@@ -482,6 +482,20 @@ def rgp_to_sat_er(rgp_obj: dict) -> dict:
 
         logger.debug(f"[SC] Card Literals: {card_literals_sc}")
 
+        # try:
+        #     pass
+
+        # except CardEnc.NoSuchEncodingError as e:
+        #     # Handle the case where the encoding does not exist
+        #     logger.error(f"Caught NoSuchEncodingError: {e}")
+
+        # except ValueError as e:
+        #     # Handle ValueError if the bound or input is invalid
+        #     logger.error(f"Caught ValueError: {e}")
+
+        # except Exception as e:
+        #     logger.error(f"An Unexpected Error Occurred: {e}")
+
         if 0 < b_val <= len(card_literals_sc):
             cnf_sc = CardEnc.atleast(lits=card_literals_sc, bound=b_val, top_id=lit_cnt, encoding=EncType.seqcounter) # default encoding
             cnf_clauses = cnf_sc.clauses
@@ -495,6 +509,9 @@ def rgp_to_sat_er(rgp_obj: dict) -> dict:
 
         elif b_val > len(card_literals_sc):
             logger.error("[SC] Unsatisfiable Constraint: Generating UNSAT Clause...")
+            sat_obj["unsatisfiable"] = True
+
+            cnf_clauses = []
 
             unsat_clause = [card_literals_sc[0], -card_literals_sc[0]]
             cnf_clauses.append(unsat_clause)
