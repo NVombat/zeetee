@@ -1,20 +1,12 @@
 import os
 import json
 import jsonschema
-from jsonschema import validate, Draft7Validator
+from jsonschema import Draft7Validator
 
-from logger import create_logger
-from helper import get_file_path
+from . import *
+from .logger import create_logger
 
 logger = create_logger(l_name="zt_fmt_validator")
-
-# JSON File Paths
-default_jfp = get_file_path("testfiles", "rgp_hc.json")
-pos_jfp = get_file_path("testfiles", "rgp_test_pos.json")
-neg_jfp = get_file_path("testfiles", "rgp_test_neg.json")
-small_jfp = get_file_path("testfiles", "rgp_test_small.json")
-multi_jfp = get_file_path("testfiles", "rgp_hc_multiple.json")
-false_fmt_jfp = get_file_path("testfiles", "rgp_false_fmt.json")
 
 
 instance_schema = {
@@ -35,6 +27,18 @@ instance_schema = {
                 "t": {
                     "type": "integer",
                     "minimum": 0
+                },
+                "partitions": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "type": "array",
+                        "minItems": 1,
+                        "items": {
+                            "type": "integer",
+                            "minimum": 1
+                        }
+                    }
                 },
                 "uc": {
                     "type": "array",
@@ -110,16 +114,6 @@ def validate_json_format(json_file_path=default_jfp) -> bool:
     with open(json_file_path, "r") as fh:
         rgp_json_inst = json.load(fh)
 
-    # try:
-    #     validate(instance=rgp_json_inst, schema=instance_schema)
-
-    #     logger.debug(f"JSON FILE {json_file_path} is VALID")
-    #     return True
-
-    # except jsonschema.exceptions.ValidationError as err:
-    #     logger.debug(f"JSON FILE {json_file_path} is INVALID: {err.message}")
-    #     return False
-
     validator = Draft7Validator(instance_schema)
 
     # Collect all validation errors
@@ -144,6 +138,7 @@ if __name__ == "__main__":
     # fmt = validate_json_format(neg_jfp)
     # fmt = validate_json_format(small_jfp)
     # fmt = validate_json_format(multi_jfp)
+    # fmt = validate_json_format(test_path_neg)
     # fmt = validate_json_format(false_fmt_jfp)
 
     if fmt:
