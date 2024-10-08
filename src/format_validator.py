@@ -40,6 +40,10 @@ instance_schema = {
                         }
                     }
                 },
+                "flag": {
+                    "type": "integer",
+                    "enum": [0, 1]
+                },
                 "uc": {
                     "type": "array",
                     "items": {
@@ -93,7 +97,7 @@ instance_schema = {
                     }
                 }
             },
-            "required": ["i", "n", "t", "uc", "sc"],
+            "required": ["i", "n", "t", "partitions", "uc", "sc"],
             "additionalProperties": False
         }
     },
