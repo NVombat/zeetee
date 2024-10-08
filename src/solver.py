@@ -5,7 +5,7 @@ from . import *
 from .logger import create_logger
 from .er_encoder import rgp_to_sat_er
 from .mb_encoder import rgp_to_sat_mb
-from .converter import json_to_rgp, extract_clauses
+from .helper import json_to_rgp, extract_clauses
 
 logger = create_logger(l_name="zt_solver")
 
