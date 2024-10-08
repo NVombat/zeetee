@@ -1,5 +1,145 @@
-import os
+import json
 import itertools
+
+from . import default_jfp
+from .logger import create_logger
+
+logger = create_logger(l_name="zt_helper")
+
+
+def json_to_rgp(json_file_path=default_jfp) -> list:
+    '''
+    Converts a JSON object to a list of RGP dictionary object(s)
+
+    Args:
+        json_file_path: Path to JSON file
+
+    Returns:
+        list: list of RGP instance(s) dicts
+    '''
+    logger.info(f"File Path: {json_file_path}")
+
+    try:
+        with open(json_file_path, "r") as fh:
+            rgp_obj = json.load(fh)
+
+    except FileNotFoundError:
+        logger.error(f"{json_file_path}: File Not Found")
+
+    except PermissionError:
+        logger.error(f"{json_file_path}: File Access Not Permitted")
+
+    except Exception as e:
+        logger.error(f"Error Accessing RGP Instances from File: {json_file_path}")
+
+    logger.info(f"RGP Object: {rgp_obj}")
+
+    instances = list(rgp_obj.keys())
+    assert len(instances) != 0, logger.error(f"No RGP Instances Present In The RGP Object: {rgp_obj}")
+
+    logger.info(f"Number of Instances in the RGP Object: {len(instances)}")
+
+    rgp_instances = []
+
+    for inst in instances:
+        val = rgp_obj[inst]
+        rgp_instances.append(val)
+
+    logger.info(f"RGP Instances: {rgp_instances}")
+
+    return rgp_instances
+
+
+def rgp_dict_to_rgp(rgp_dict: dict) -> list:
+    '''
+    Converts an RGP object (here object refers to the object that is written to the
+    JSON file) to a list of RGP dictionary object(s) of the correct format
+
+    Args:
+        rgp_dict: RGP Dictionary Object
+
+    Returns:
+        list: list of RGP instance(s) dicts
+    '''
+    instances = list(rgp_dict.keys())
+    assert len(instances) != 0, logger.error(f"No RGP Instances Present In The RGP Object: {rgp_obj}")
+
+    logger.info(f"Number of Instances in the RGP Object: {len(instances)}")
+
+    rgp_instances = []
+
+    for inst in instances:
+        val = rgp_obj[inst]
+        rgp_instances.append(val)
+
+    logger.info(f"RGP Instances: {rgp_instances}")
+
+    return rgp_instances
+
+
+def extract_clauses(sat_obj: dict) -> list:
+    '''
+    Takes a SAT object and extracts its clauses to be
+    used by the SAT Solver
+
+    Args:
+        sat_obj: SAT dictionary object
+
+    Returns:
+        list: List of all clauses in the SAT Object
+    '''
+    logger.info("Extracting Clauses from SAT Object...")
+
+    final_clauses = []
+
+    clauses = sat_obj["clauses"]
+    clauses_keys = list(clauses.keys())
+
+    clause_cnt = 0
+    final_lit_cnt = 0
+
+    for key in clauses_keys:
+        logger.debug(f"Clause Key: {key}")
+
+        clause = clauses[key]
+        logger.debug(f"{key}: {clause}")
+
+        clause_cnt = clause_cnt + len(clause)
+
+        for cl in clause:
+            final_clauses.append(cl)
+            final_lit_cnt = final_lit_cnt + len(cl)
+
+    logger.debug(f"Sum of Clauses: {clause_cnt}")
+    logger.debug(f"Length of Final Clauses: {len(final_clauses)}")
+    logger.debug(f"Final Literal Count: {final_lit_cnt}")
+
+    assert clause_cnt==len(final_clauses), logger.error("Issue Extracting Correct Number of Clauses")
+    logger.debug(f"SAT Object Clauses: {final_clauses}")
+
+    return final_clauses
+
+
+def get_instance_data(sat_obj: dict) -> dict:
+    '''
+    Take a SAT object and extract instance data
+
+    Data Extracted:
+        1. Total Number of Variable (x1, x2, ..., xn)
+        2. Total Number of Literals (x1, -x1, x2, -x2, ..., xn, -xn) [Total Length of Clauses]
+        3. Total Number of Clauses
+
+    Args:
+        sat_obj: SAT dictionary object
+
+    Returns:
+        dict: Dictionary containing instance data
+    '''
+    logger.info("Extracting Instance Data from SAT Object...")
+
+    instance_data = {}
+
+    # TODO -> MERGE WITH ABOVE FUNCTION
 
 
 def get_key_by_value(dictionary, target_value):
@@ -21,28 +161,6 @@ def get_key_by_value(dictionary, target_value):
     return None
 
 
-def get_file_path(foldername: str, filename: str, ) -> str:
-    '''
-    Get the path to files in the data folder (/data/(log/test)files)
-
-    Args:
-        filename: File Name
-        foldername: Name of Folder Within the Data Folder
-
-    Returns: Path to file
-    '''
-    # Get the directory of the current file
-    src_dir = os.path.dirname(__file__)
-
-    # Construct the path to the 'data/foldername' directory
-    data_dir = os.path.abspath(os.path.join(src_dir, '..', 'data', foldername))
-
-    # Combine the directory with the filename to get the full path
-    file_path = os.path.join(data_dir, filename)
-
-    return file_path
-
-
 def generate_unique_pairs(arr: list) -> list:
     '''
     Generate all unique pairs of elements from an array
@@ -54,3 +172,65 @@ def generate_unique_pairs(arr: list) -> list:
         list: A list of all the unique pairs generated
     '''
     return list(itertools.combinations(arr, 2))
+
+
+def json_to_dict(json_file_path: str) -> dict:
+    '''
+    Converts a JSON object to a dictionary object
+
+    Args:
+        json_file_path: Path to JSON file
+
+    Returns:
+        dict: Dictionary containing JSON object
+    '''
+    logger.info(f"File Path: {json_file_path}")
+
+    try:
+        with open(json_file_path, "r") as fh:
+            dict_obj = json.load(fh)
+
+    except FileNotFoundError:
+        logger.error(f"{json_file_path}: File Not Found")
+
+    except PermissionError:
+        logger.error(f"{json_file_path}: File Access Not Permitted")
+
+    except Exception as e:
+        logger.error(f"Error Accessing JSON File: {json_file_path}")
+
+    logger.info(f"Dictionary Object: {dict_obj}")
+
+    return dict_obj
+
+
+def get_constraint_intersection(constraints: tuple) -> int:
+    '''
+    Calculate the intersection of UC and SC
+
+    Args:
+        constraints: Tuple containing UC and SC
+
+    Returns:
+        int: An integer representing the intersection percentage
+    '''
+    uc = constraints[0]
+    sc = constraints[1]
+
+    uc_resources = [set(constraint[0]) for constraint in uc]
+    sc_resources = [set(constraint[0]) for constraint in sc]
+
+    # Count total unique resources in both lists
+    total_unique_resources = set().union(*uc_resources, *sc_resources)
+    logger.debug(f"Total Unique Resources: {total_unique_resources}")
+
+    # Calculate total intersection resources
+    total_intersection = 0
+    for uc_res in uc_resources:
+        for sc_res in sc_resources:
+            total_intersection += len(uc_res.intersection(sc_res))
+
+    degree_of_intersection = (total_intersection / len(total_unique_resources)) * 100
+    logger.debug(f"Degree Of Intersection: {degree_of_intersection}")
+
+    return int(degree_of_intersection)
