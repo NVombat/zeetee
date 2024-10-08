@@ -482,7 +482,15 @@ def rgp_to_sat_er(rgp_obj: dict) -> dict:
         logger.debug(f"[SC] Card Literals: {card_literals_sc}")
 
         # try:
-        #     pass
+        #     cnf_sc = CardEnc.atleast(lits=card_literals_sc, bound=b_val, top_id=lit_cnt, encoding=EncType.seqcounter) # default encoding
+        #     cnf_clauses = cnf_sc.clauses
+        #     logger.debug(f"[SC] Y[{r},{p}] Clauses: {cnf_clauses}")
+
+        #     # Updating literal count
+        #     if cnf_sc.nv != 0:
+        #         lit_cnt = cnf_sc.nv
+
+        #     logger.debug(f"UPDATED LITERAL COUNT: {lit_cnt}")
 
         # except CardEnc.NoSuchEncodingError as e:
         #     # Handle the case where the encoding does not exist
@@ -512,8 +520,11 @@ def rgp_to_sat_er(rgp_obj: dict) -> dict:
 
             cnf_clauses = []
 
-            unsat_clause = [card_literals_sc[0], -card_literals_sc[0]]
-            cnf_clauses.append(unsat_clause)
+            unsat_clause_1 = [card_literals_sc[0]]
+            unsat_clause_2 = [-card_literals_sc[0]]
+
+            cnf_clauses.append(unsat_clause_1)
+            cnf_clauses.append(unsat_clause_2)
 
         else:
             cnf_clauses = []
