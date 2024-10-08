@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Main Command : python -m src.filename [optional args]
+
 # Directory where Python files are located
 src_dir="/home/nvombat/Desktop/zeetee/src"
 
