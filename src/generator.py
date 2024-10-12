@@ -5,8 +5,9 @@ import json
 import random
 from itertools import combinations
 
+from .utils import get_file_path
 from .logger import create_logger
-from .helper import get_file_path, generate_unique_pairs
+from .helper import generate_unique_pairs
 
 logger = create_logger(l_name="zt_generator")
 
@@ -173,9 +174,9 @@ def generate_constraints(instance_config: dict, elements: list, partitions: list
         5. [[s], 'ge', k-1] -> SC
 
         6. If flag == 0: FOR UNSAT CONSTRAINTS
-            6.1. Select all n elements
-            6.2. Generate unsat SC of fixed size [2] with every pair of elements of the form {(1,2), ge, 2}
-            6.3. Generate unsat UC of the form {(1,2,...,n), le, num_groups-1}
+            6.1. Select k elements (k < num_groups) each from a different group
+            6.2. Generate SC of size [2],[3],...,[k-1] with every pair of the elements of the form {(1,2), ge, 2}
+            6.3. Generate unsat UC of the form {(1,2,...,k), le, k-1}
     '''
     num_resources = instance_config['num_resources']
     num_groups = instance_config['num_groups']
@@ -230,15 +231,33 @@ def generate_constraints(instance_config: dict, elements: list, partitions: list
 
     if flag == 0:
         # Generate unsatisfiable constraints
-        neg_uc = [elements, 'le', num_groups-1]
+        k = random.randint(2, num_groups)
+        selected_groups = random.sample(partitions, k)
+
+        logger.debug(f"Groups From Which Elements Will Be Selected: {selected_groups}")
+
+        neg_elements = []
+
+        for i in range(k):
+            choice = random.choice(selected_groups[i])
+            neg_elements.append(choice)
+
+        neg_elements.sort()
+        logger.debug(f"Elements Selected From Groups: {neg_elements} -> [{len(neg_elements)} Elements Selected]")
+
+        neg_uc = [neg_elements, 'le', k-1]
         logger.debug(f"Negative Usability Constraint:  {neg_uc}")
         uc.append(neg_uc)
 
-        # unique_pairs = generate_unique_pairs(neg_elements)
-        unique_pairs = generate_unique_pairs(elements)
+        unique_pairs = generate_unique_pairs(neg_elements)
         num_neg_sc = len(unique_pairs)
 
-        neg_sc_bval = num_groups
+        '''
+        Flag to decide if we want more than 2 elements in an SC
+        Randomly select a number -> If selection == 1, we add more than 2 elements
+        Can add more elements to change probability of selecting 1
+        '''
+        more_than_two = [0, 1]
 
         for i in range(0, num_neg_sc):
             constraint = []
@@ -247,9 +266,14 @@ def generate_constraints(instance_config: dict, elements: list, partitions: list
             constraint_elements = list(unique_pairs[i])
             constraint_elements.sort()
 
+            mtt_choice = random.choice(more_than_two)
+            if mtt_choice == 1:
+                # Add functionality to add more than 2 elements to a constraint
+                pass
+
             constraint.append(constraint_elements)
             constraint.append('ge')
-            constraint.append(neg_sc_bval)
+            constraint.append(len(constraint_elements))
 
             sc.append(constraint)
 
@@ -263,12 +287,12 @@ def generate_constraints(instance_config: dict, elements: list, partitions: list
 
 def generate_rgp_instances(flag: int, n=10, cst_size_type="fixed", n_cst=10, cst_size=3, num_instance=5) -> dict:
     '''
-    Generate negative [UNSAT] or positive [SAT] RGP instances
-    based on a flag = 0 [negative] or 1 [positive], convert
-    them to a JSON object and write them to a .json file.
+    Generate negative [UNSAT] or positive [SAT] RGP instances based
+    on a flag = 0 [negative], 1 [positive] or 2 [random selection],
+    convert them to a JSON object and write them to a .json file.
 
     Args:
-        flag: 0/1 for negative or positive instances
+        flag: 0/1/2 for negative, positive or random instances [random selection of pos/neg instances]
         n: Number of resources in each instance
         cst_size_type: Constraint Size Type [Random/Fixed]
         n_cst: Number of constraints
@@ -278,8 +302,8 @@ def generate_rgp_instances(flag: int, n=10, cst_size_type="fixed", n_cst=10, cst
     Returns:
         dict: Containing "num_instances" instances
     '''
-    if not isinstance(flag, int) or flag not in [0, 1]:
-        logger.error(f"Flag {flag} must be an integer that is either 0 or 1")
+    if not isinstance(flag, int) or flag not in range(0,3):
+        logger.error(f"Flag {flag} must be an integer that is either 0, 1 or 2")
         sys.exit(1)
 
     rgp_instances = {}
@@ -302,7 +326,7 @@ def generate_rgp_instances(flag: int, n=10, cst_size_type="fixed", n_cst=10, cst
         elements = list(range(1, n+1))
 
         sq_n = int(math.sqrt(n))
-        t = random.randint(1,sq_n)
+        t = random.randint(2,sq_n)
         inst["t"] = t
         logger.debug(f"Number of Groups: {t}")
 
@@ -312,10 +336,21 @@ def generate_rgp_instances(flag: int, n=10, cst_size_type="fixed", n_cst=10, cst
         inst["partitions"] = partitioned_groups
 
         if flag == 0: # Negative
+            inst["flag"] = flag
             uc,sc = generate_constraints(instance_config, elements, partitioned_groups, flag)
 
         elif flag == 1: # Positive
+            inst["flag"] = flag
             uc,sc = generate_constraints(instance_config, elements, partitioned_groups, flag)
+
+        elif flag == 2: # Randomly Select Positive or Negative Flag
+            options = [0,1]
+            ran_flag = random.choice(options)
+
+            inst["flag"] = ran_flag
+            logger.debug(f"Random Chosen Flag: {ran_flag}")
+
+            uc,sc = generate_constraints(instance_config, elements, partitioned_groups, ran_flag)
 
         inst["uc"] = uc
         inst["sc"] = sc
@@ -340,3 +375,4 @@ if __name__ == "__main__":
 
     rgp_instances = generate_rgp_instances(flag=0, n=10)
     # rgp_instances = generate_rgp_instances(flag=1, n=10)
+    # rgp_instances = generate_rgp_instances(flag=2, n=10)
