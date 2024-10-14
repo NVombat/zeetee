@@ -183,12 +183,69 @@ def generate_constraints(instance_config: dict, elements: list, partitions: list
     num_constraints = instance_config['num_constraints']
     constraint_size_type = instance_config['constraint_size_type']
 
-    # Fixed constraint size
+    # Fixed constraint size for positive constraints
     if constraint_size_type == "fixed":
         constraint_size = instance_config['constraint_size']
 
     uc = []
     sc = []
+
+    if flag == 0:
+        # Generate unsatisfiable constraints
+        k = random.randint(2, num_groups)
+        selected_groups = random.sample(partitions, k)
+
+        logger.debug(f"Groups From Which Elements Will Be Selected: {selected_groups}")
+
+        neg_elements = []
+
+        for i in range(k):
+            choice = random.choice(selected_groups[i])
+            neg_elements.append(choice)
+
+        neg_elements.sort()
+        logger.debug(f"Elements Selected From Groups: {neg_elements} -> [{len(neg_elements)} Elements Selected]")
+
+        neg_uc = [neg_elements, 'le', k-1]
+        logger.debug(f"Negative Usability Constraint:  {neg_uc}")
+        uc.append(neg_uc)
+
+        unique_pairs = generate_unique_pairs(neg_elements)
+        num_neg_sc = len(unique_pairs)
+
+        # Update Total Number of Constraints - Account for 1 UC and Num_Neg_SC SC
+        if num_constraints < (num_neg_sc + 1):
+            logger.error("Requested To Generate Fewer Constraints!")
+
+        else:
+            num_constraints = num_constraints - num_neg_sc - 1
+
+        '''
+        Flag to decide if we want more than 2 elements in an SC
+        Randomly select a number -> If selection == 1, we add more than 2 elements
+        Can add more elements to change probability of selecting 1
+        '''
+        more_than_two = [0, 1]
+
+        for i in range(0, num_neg_sc):
+            constraint = []
+
+            # Add elements to constraint
+            constraint_elements = list(unique_pairs[i])
+            constraint_elements.sort()
+
+            mtt_choice = random.choice(more_than_two)
+            if mtt_choice == 1:
+                # Add functionality to add more than 2 elements to a constraint
+                pass
+
+            constraint.append(constraint_elements)
+            constraint.append('ge')
+            constraint.append(len(constraint_elements))
+
+            sc.append(constraint)
+
+            logger.debug(f"Negative Security Constraint {i}:  {constraint}")
 
     for i in range (1, num_constraints+1):
         # [[s],op,b]
@@ -228,56 +285,6 @@ def generate_constraints(instance_config: dict, elements: list, partitions: list
             sc.append(constraint)
 
         logger.debug(f"Constraint {i}:  {constraint}")
-
-    if flag == 0:
-        # Generate unsatisfiable constraints
-        k = random.randint(2, num_groups)
-        selected_groups = random.sample(partitions, k)
-
-        logger.debug(f"Groups From Which Elements Will Be Selected: {selected_groups}")
-
-        neg_elements = []
-
-        for i in range(k):
-            choice = random.choice(selected_groups[i])
-            neg_elements.append(choice)
-
-        neg_elements.sort()
-        logger.debug(f"Elements Selected From Groups: {neg_elements} -> [{len(neg_elements)} Elements Selected]")
-
-        neg_uc = [neg_elements, 'le', k-1]
-        logger.debug(f"Negative Usability Constraint:  {neg_uc}")
-        uc.append(neg_uc)
-
-        unique_pairs = generate_unique_pairs(neg_elements)
-        num_neg_sc = len(unique_pairs)
-
-        '''
-        Flag to decide if we want more than 2 elements in an SC
-        Randomly select a number -> If selection == 1, we add more than 2 elements
-        Can add more elements to change probability of selecting 1
-        '''
-        more_than_two = [0, 1]
-
-        for i in range(0, num_neg_sc):
-            constraint = []
-
-            # Add elements to constraint
-            constraint_elements = list(unique_pairs[i])
-            constraint_elements.sort()
-
-            mtt_choice = random.choice(more_than_two)
-            if mtt_choice == 1:
-                # Add functionality to add more than 2 elements to a constraint
-                pass
-
-            constraint.append(constraint_elements)
-            constraint.append('ge')
-            constraint.append(len(constraint_elements))
-
-            sc.append(constraint)
-
-            logger.debug(f"Negative Security Constraint {i}:  {constraint}")
 
     logger.debug(f"Final UC Generated: {uc}")
     logger.debug(f"Final SC Generated: {sc}")
