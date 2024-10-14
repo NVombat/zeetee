@@ -35,7 +35,7 @@ fi
 shift
 
 # Files that require additional arguments
-if [[ "$filename" == "solver" || "$filename" == "runner" ]]; then
+if [[ "$filename" == "solver" ]]; then
     if [ -z "$1" ] || [ -z "$2" ]; then
         echo "Usage for $filename.py: ./run.sh $filename enc_type solver"
         echo "  enc_type must be an integer (1 or 2)"
@@ -52,7 +52,7 @@ if [[ "$filename" == "solver" || "$filename" == "runner" ]]; then
         exit 1
     fi
 
-    # Run solver.py or runner.py with the provided arguments
+    # Run solver.py with the provided arguments
     echo "Running poetry run python -m src.$filename $enc_type $solver &"
     poetry run python -m "src.$filename" "$enc_type" "$solver" &
 else
