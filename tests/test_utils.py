@@ -1,14 +1,15 @@
 import unittest
 
 from src.utils import get_file_path
-from src.mb_encoder import rgp_to_sat_mb
 
-class TestMBEncoder(unittest.TestCase):
+class TestUtils(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        json_file_path = get_file_path("testfiles", "rgp_test_small.json")
+        json_file_path = get_file_path("testfiles", "rgp_hc.json")
 
+    def test_get_file_path(self):
+        pass
 
     @classmethod
     def tearDownClass(cls):

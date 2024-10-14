@@ -1,7 +1,7 @@
 import unittest
 
 from src.solver import solve
-from src.helper import get_file_path
+from src.utils import get_file_path
 
 class TestSolver(unittest.TestCase):
 

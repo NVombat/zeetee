@@ -1,6 +1,6 @@
 import unittest
 
-from src.helper import get_file_path
+from src.utils import get_file_path
 
 
 class TestRunner(unittest.TestCase):

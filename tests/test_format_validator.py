@@ -1,6 +1,6 @@
 import unittest
 
-from src.helper import get_file_path
+from src.utils import get_file_path
 from src.format_validator import validate_json_format
 class TestFormatValidator(unittest.TestCase):
 
