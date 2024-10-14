@@ -456,12 +456,7 @@ def rgp_to_sat_er(rgp_obj: dict) -> dict:
     clause_builder_card = []
     atleast_card_clauses = []
 
-    sat_obj["unsatisfiable"] = False
-
     for r in range (1, num_sc+1):
-        if sat_obj["unsatisfiable"]:
-            break
-
         temp_row_r = literal_mappings_sc[r]
         logger.debug(f"[SC] TEMP ROW R: {temp_row_r}")
 
@@ -481,30 +476,8 @@ def rgp_to_sat_er(rgp_obj: dict) -> dict:
 
         logger.debug(f"[SC] Card Literals: {card_literals_sc}")
 
-        # try:
-        #     cnf_sc = CardEnc.atleast(lits=card_literals_sc, bound=b_val, top_id=lit_cnt, encoding=EncType.seqcounter) # default encoding
-        #     cnf_clauses = cnf_sc.clauses
-        #     logger.debug(f"[SC] Y[{r},{p}] Clauses: {cnf_clauses}")
-
-        #     # Updating literal count
-        #     if cnf_sc.nv != 0:
-        #         lit_cnt = cnf_sc.nv
-
-        #     logger.debug(f"UPDATED LITERAL COUNT: {lit_cnt}")
-
-        # except CardEnc.NoSuchEncodingError as e:
-        #     # Handle the case where the encoding does not exist
-        #     logger.error(f"Caught NoSuchEncodingError: {e}")
-
-        # except ValueError as e:
-        #     # Handle ValueError if the bound or input is invalid
-        #     logger.error(f"Caught ValueError: {e}")
-
-        # except Exception as e:
-        #     logger.error(f"An Unexpected Error Occurred: {e}")
-
-        if 0 < b_val <= len(card_literals_sc):
-            cnf_sc = CardEnc.atleast(lits=card_literals_sc, bound=b_val, top_id=lit_cnt, encoding=EncType.seqcounter) # default encoding
+        try:
+            cnf_sc = CardEnc.atleast(lits=card_literals_sc, bound=b_val, top_id=lit_cnt, encoding=EncType.seqcount) # default encoding
             cnf_clauses = cnf_sc.clauses
             logger.debug(f"[SC] Y[{r},{p}] Clauses: {cnf_clauses}")
 
@@ -514,20 +487,16 @@ def rgp_to_sat_er(rgp_obj: dict) -> dict:
 
             logger.debug(f"UPDATED LITERAL COUNT: {lit_cnt}")
 
-        elif b_val > len(card_literals_sc):
-            logger.error("[SC] Unsatisfiable Constraint: Generating UNSAT Clause...")
-            sat_obj["unsatisfiable"] = True
+        except NoSuchEncodingError as e:
+            # Handle the case where the encoding does not exist
+            logger.error(f"Caught NoSuchEncodingError: {e}")
 
-            cnf_clauses = []
+        except ValueError as e:
+            # Handle ValueError if the bound or input is invalid
+            logger.error(f"Caught ValueError: {e}")
 
-            unsat_clause_1 = [card_literals_sc[0]]
-            unsat_clause_2 = [-card_literals_sc[0]]
-
-            cnf_clauses.append(unsat_clause_1)
-            cnf_clauses.append(unsat_clause_2)
-
-        else:
-            cnf_clauses = []
+        except Exception as e:
+            logger.error(f"An Unexpected Error Occurred: {e}")
 
         clause_builder_card.append(cnf_clauses)
 
