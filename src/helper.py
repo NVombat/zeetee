@@ -79,8 +79,13 @@ def rgp_dict_to_rgp(rgp_dict: dict) -> list:
 
 def extract_clauses(sat_obj: dict) -> list:
     '''
-    Takes a SAT object and extracts its clauses to be
-    used by the SAT Solver
+    Take a SAT object and extract its clauses to be used
+    by the SAT Solver. Also extract instance data
+
+    Data Extracted:
+        1. Total Number of Variable (x1, x2, ..., xn)
+        2. Total Number of Literals (x1, -x1, x2, -x2, ..., xn, -xn) [Total Length of Clauses]
+        3. Total Number of Clauses
 
     Args:
         sat_obj: SAT dictionary object
@@ -89,6 +94,12 @@ def extract_clauses(sat_obj: dict) -> list:
         list: List of all clauses in the SAT Object
     '''
     logger.info("Extracting Clauses from SAT Object...")
+
+    instance_data = {
+        "num_clauses": 0,
+        "num_variables": sat_obj['final_lit_cnt'],
+        "num_literals": 0
+    }
 
     final_clauses = []
 
@@ -112,34 +123,17 @@ def extract_clauses(sat_obj: dict) -> list:
 
     logger.debug(f"Sum of Clauses: {clause_cnt}")
     logger.debug(f"Length of Final Clauses: {len(final_clauses)}")
-    logger.debug(f"Final Literal Count: {final_lit_cnt}")
-
     assert clause_cnt==len(final_clauses), logger.error("Issue Extracting Correct Number of Clauses")
+
     logger.debug(f"SAT Object Clauses: {final_clauses}")
+    instance_data["num_clauses"] = clause_cnt
+
+    logger.debug(f"Number Of Variables: {sat_obj['final_lit_cnt']}")
+
+    logger.debug(f"Final Literal Count: {final_lit_cnt}")
+    instance_data["num_literals"] = final_lit_cnt
 
     return final_clauses
-
-
-def get_instance_data(sat_obj: dict) -> dict:
-    '''
-    Take a SAT object and extract instance data
-
-    Data Extracted:
-        1. Total Number of Variable (x1, x2, ..., xn)
-        2. Total Number of Literals (x1, -x1, x2, -x2, ..., xn, -xn) [Total Length of Clauses]
-        3. Total Number of Clauses
-
-    Args:
-        sat_obj: SAT dictionary object
-
-    Returns:
-        dict: Dictionary containing instance data
-    '''
-    logger.info("Extracting Instance Data from SAT Object...")
-
-    instance_data = {}
-
-    # TODO -> MERGE WITH ABOVE FUNCTION
 
 
 def get_key_by_value(dictionary, target_value):
