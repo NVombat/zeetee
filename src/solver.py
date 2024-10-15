@@ -1,11 +1,11 @@
 import sys
-from pysat.solvers import Glucose3, Lingeling
+from pysat.solvers import Solver
 
 from . import *
 from .logger import create_logger
 from .er_encoder import rgp_to_sat_er
 from .mb_encoder import rgp_to_sat_mb
-from .helper import json_to_rgp, extract_clauses
+from .helper import json_to_rgp, extract_clauses_and_instance_data
 
 logger = create_logger(l_name="zt_solver")
 
@@ -46,42 +46,66 @@ def solve(enc_type: int, solver_flag: int, rgp_instance: dict) -> dict:
         sat_obj = rgp_to_sat_er(rgp_instance)
         logger.info(f"SAT Object [ER-ENCODER]: {sat_obj}")
 
+    clauses,instance_data = extract_clauses_and_instance_data(sat_obj)
+    logger.debug(f"Clauses: {clauses}")
+    logger.debug(f"Instance Data: {instance_data}")
+
+    logger.debug(f"Solving Instance...")
+
     res = {}
 
-    if sat_obj["unsatisfiable"]:
-        satisfiable = False
+    solvers = ['glucose3', 'lingeling']
+
+    if solver_flag == 1:
+        # Glucose3
+        solver_name = solvers[0]
+
+    elif solver_flag == 2:
+        # Lingeling
+        solver_name = solvers[1]
+
+    logger.debug(f"Solver: {solver_name}")
+    solver = Solver(name=solver_name, bootstrap_with=clauses, use_timer=True, with_proof=True)
+
+    satisfiable = solver.solve()
+    logger.debug(f"Satisfiable: {satisfiable}")
+
+    elapsed_time = solver.time()
+    logger.debug(f"TTS [TimeToSolve]: {elapsed_time} Seconds")
+
+    timeout_flag = False
+
+    if satisfiable is None:
+        timeout_flag = True
+        logger.debug("Solver Timed Out!")
+
+    elif satisfiable:
+        result = solver.get_model()
+
+        if result:
+            logger.debug(f"Solution: {result}")
+
+        else:
+            logger.debug("No model could be extracted.")
 
     else:
-        clauses = extract_clauses(sat_obj)
+        result = solver.get_proof()
 
-        logger.debug(f"Solving Instance...")
+        if result:
+            logger.debug(f"No satisfiable solution exists. Proof: {result}")
 
-        # Initialize SAT Solver
-        if solver_flag == 1:
-            # Glucose3
-            logger.debug("Solver: Glucose3")
-            solver = Glucose3()
-
-        elif solver_flag == 2:
-            # Lingeling
-            logger.debug("Solver: Lingeling")
-            solver = Lingeling()
-
-        for clause in clauses:
-            solver.add_clause(clause)
-
-        satisfiable = solver.solve()
-        logger.debug(f"Satisfiable: {satisfiable}")
-
-        if satisfiable:
-            logger.debug(f"Solution: {solver.get_model()}")
         else:
-            logger.debug("No satisfiable solution exists!")
+            logger.debug("Proof could not be extracted.")
 
-        solver.delete()
+    logger.debug(f"Accumulated Low Level Stats: {solver.accum_stats() or 'No stats available.'}")
 
     res["status"] = satisfiable
-    res["result"] = []
+    res["tts"] = elapsed_time
+    res["result"] = result
+    res["timed_out"] = timeout_flag
+    res["instance_data"] = instance_data
+
+    solver.delete()
 
     return res
 
@@ -110,12 +134,12 @@ if __name__ == "__main__":
     logger.info(f"Encoding Type is set to {enc_type}... Solver is set to {slv_flag}...")
 
     # Use Default File Path
-    # rgp_instances = json_to_rgp()
+    rgp_instances = json_to_rgp()
     # rgp_instances = json_to_rgp(pos_jfp)
     # rgp_instances = json_to_rgp(neg_jfp)
     # rgp_instances = json_to_rgp(small_jfp)
 
-    rgp_instances = json_to_rgp(test_path_neg)
+    # rgp_instances = json_to_rgp(test_path_neg)
     # rgp_instances = json_to_rgp(test_path_pos)
 
     # Call the SAT Solver on each instance
