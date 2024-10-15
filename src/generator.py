@@ -7,7 +7,7 @@ from itertools import combinations
 
 from .utils import get_file_path
 from .logger import create_logger
-from .helper import generate_unique_pairs
+from .helper import generate_unique_pairs, write_to_file
 
 logger = create_logger(l_name="zt_generator")
 
@@ -85,46 +85,6 @@ def partition_array_into_k_groups(elements: list, k: int) -> list:
         logger.debug(f"Group {idx + 1}: {group}")
 
     return groups
-
-
-def write_to_file(rgp_instances: dict, json_file_name: str, mode="w") -> None:
-    '''
-    Writes (Appends) RGP Instances to file
-
-    Args:
-        rgp_instances: Dictionary of RGP Instances
-        json_file_name: File name
-        mode: Mode of writing (write/append) [Default = "w"]
-
-    Returns:
-        None
-    '''
-    if not isinstance(mode, str) or mode not in ["a", "w"]:
-        logger.error(f"Incorrect Mode of Writing to File: {mode} Must be a string that is either 'w' or 'a'!")
-        sys.exit(1)
-
-    logger.debug(f"JSON Filename: {json_file_name}")
-
-    try:
-        json_obj = json.dumps(rgp_instances, indent=4)
-
-        with open(json_file_name, mode) as fh:
-            fh.write(json_obj)
-            # json.dump(json_obj, fh)
-
-        logger.info(f"Successfully wrote JSON data to {json_file_name}")
-
-    except FileNotFoundError as e:
-        logger.error(f"FileNotFoundError: The file {json_file_name} was not found. {e}")
-
-    except IOError as e:
-        logger.error(f"IOError: An error occurred while writing to the file {json_file_name}. {e}")
-
-    except json.JSONDecodeError as e:
-        logger.error(f"JSONDecodeError: An error occurred while converting the object to JSON. {e}")
-
-    except Exception as e:
-        logger.error(f"An unexpected error occurred: {e}")
 
 
 def find_num_groups_involved(elements: list, partitions: list) -> int:
