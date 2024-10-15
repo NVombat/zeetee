@@ -77,7 +77,7 @@ def rgp_dict_to_rgp(rgp_dict: dict) -> list:
     return rgp_instances
 
 
-def extract_clauses(sat_obj: dict) -> list:
+def extract_clauses_and_instance_data(sat_obj: dict) -> tuple:
     '''
     Take a SAT object and extract its clauses to be used
     by the SAT Solver. Also extract instance data
@@ -91,7 +91,7 @@ def extract_clauses(sat_obj: dict) -> list:
         sat_obj: SAT dictionary object
 
     Returns:
-        list: List of all clauses in the SAT Object
+        tuple: A tuple containing clauses and instance data from the SAT Object
     '''
     logger.info("Extracting Clauses from SAT Object...")
 
@@ -133,7 +133,7 @@ def extract_clauses(sat_obj: dict) -> list:
     logger.debug(f"Final Literal Count: {final_lit_cnt}")
     instance_data["num_literals"] = final_lit_cnt
 
-    return final_clauses
+    return (final_clauses,instance_data)
 
 
 def get_key_by_value(dictionary, target_value):
