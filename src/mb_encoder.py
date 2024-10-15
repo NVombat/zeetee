@@ -2,7 +2,7 @@ from pysat.card import *
 
 from . import *
 from .logger import create_logger
-from .helper import get_key_by_value, json_to_rgp, extract_clauses
+from .helper import get_key_by_value, json_to_rgp, extract_clauses_and_instance_data
 
 logger = create_logger(l_name="zt_mb_encoder")
 
@@ -758,4 +758,6 @@ if __name__ == "__main__":
 
     logger.info(f"SAT Objects: {sat_instances}")
 
-    clauses = extract_clauses(sat_obj)
+    clauses,instance_data = extract_clauses_and_instance_data(sat_obj)
+    logger.info(f"Clauses: {clauses}")
+    logger.info(f"Instance Data: {instance_data}")
