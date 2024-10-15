@@ -477,7 +477,7 @@ def rgp_to_sat_er(rgp_obj: dict) -> dict:
         logger.debug(f"[SC] Card Literals: {card_literals_sc}")
 
         try:
-            cnf_sc = CardEnc.atleast(lits=card_literals_sc, bound=b_val, top_id=lit_cnt, encoding=EncType.seqcount) # default encoding
+            cnf_sc = CardEnc.atleast(lits=card_literals_sc, bound=b_val, top_id=lit_cnt, encoding=EncType.seqcounter) # default encoding
             cnf_clauses = cnf_sc.clauses
             logger.debug(f"[SC] Y[{r},{p}] Clauses: {cnf_clauses}")
 
