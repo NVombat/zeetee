@@ -1,16 +1,44 @@
 {
-    "total_solving_time_e1": 0.0006966250000002283,
+    "total_solving_time_e1": 0.0005501910000003107,
     "total_instances_solved_e1": 5,
     "total_instances_timedout_e1": 0,
     "instance_solving_time_e1": [
-        0.00025349200000013283,
-        8.557400000031024e-05,
-        0.0002515769999997808,
-        5.1376000000047384e-05,
-        5.460599999995708e-05
+        4.703999999966513e-05,
+        0.00010113100000008757,
+        0.00020822500000017286,
+        7.887600000033856e-05,
+        0.00011491900000004662
+    ],
+    "instance_data_e1": [
+        {
+            "num_clauses": 677,
+            "num_variables": 143,
+            "num_literals": 1547
+        },
+        {
+            "num_clauses": 375,
+            "num_variables": 82,
+            "num_literals": 860
+        },
+        {
+            "num_clauses": 377,
+            "num_variables": 82,
+            "num_literals": 864
+        },
+        {
+            "num_clauses": 375,
+            "num_variables": 82,
+            "num_literals": 866
+        },
+        {
+            "num_clauses": 675,
+            "num_variables": 143,
+            "num_literals": 1541
+        }
     ],
     "total_solving_time_e2": 0,
     "total_instances_solved_e2": 0,
     "total_instances_timedout_e2": 0,
-    "instance_solving_time_e2": []
+    "instance_solving_time_e2": [],
+    "instance_data_e2": []
 }
