@@ -62,14 +62,14 @@ def rgp_dict_to_rgp(rgp_dict: dict) -> list:
         list: list of RGP instance(s) dicts
     '''
     instances = list(rgp_dict.keys())
-    assert len(instances) != 0, logger.error(f"No RGP Instances Present In The RGP Object: {rgp_obj}")
+    assert len(instances) != 0, logger.error(f"No RGP Instances Present In The RGP Object: {rgp_dict}")
 
     logger.info(f"Number of Instances in the RGP Object: {len(instances)}")
 
     rgp_instances = []
 
     for inst in instances:
-        val = rgp_obj[inst]
+        val = rgp_dict[inst]
         rgp_instances.append(val)
 
     logger.info(f"RGP Instances: {rgp_instances}")
@@ -196,6 +196,45 @@ def json_to_dict(json_file_path: str) -> dict:
     logger.info(f"Dictionary Object: {dict_obj}")
 
     return dict_obj
+
+
+def write_to_file(some_dict: dict, json_file_name: str, mode="w") -> None:
+    '''
+    Writes (Appends) a Dictionary Object to a JSON File
+
+    Args:
+        some_dict: A dictionary
+        json_file_name: File name
+        mode: Mode of writing (write/append) [Default = "w"]
+
+    Returns:
+        None
+    '''
+    if not isinstance(mode, str) or mode not in ["a", "w"]:
+        logger.error(f"Incorrect Mode of Writing to File: {mode} Must be a string that is either 'w' or 'a'!")
+        sys.exit(1)
+
+    logger.debug(f"JSON Filename: {json_file_name}")
+
+    try:
+        json_obj = json.dumps(some_dict, indent=4)
+
+        with open(json_file_name, mode) as fh:
+            fh.write(json_obj)
+
+        logger.info(f"Successfully wrote JSON data to {json_file_name}")
+
+    except FileNotFoundError as e:
+        logger.error(f"FileNotFoundError: The file {json_file_name} was not found. {e}")
+
+    except IOError as e:
+        logger.error(f"IOError: An error occurred while writing to the file {json_file_name}. {e}")
+
+    except json.JSONDecodeError as e:
+        logger.error(f"JSONDecodeError: An error occurred while converting the object to JSON. {e}")
+
+    except Exception as e:
+        logger.error(f"An unexpected error occurred: {e}")
 
 
 def get_constraint_intersection(constraints: tuple) -> int:
