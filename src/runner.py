@@ -9,7 +9,7 @@ from .logger import create_logger
 from .er_encoder import rgp_to_sat_er
 from .mb_encoder import rgp_to_sat_mb
 from .generator import generate_rgp_instances
-from .helper import json_to_dict, json_to_rgp, extract_clauses, rgp_dict_to_rgp, write_to_file
+from .helper import json_to_dict, json_to_rgp, extract_clauses_and_instance_data, rgp_dict_to_rgp, write_to_file
 
 logger = create_logger(l_name="zt_runner")
 
@@ -57,6 +57,7 @@ def get_experiment_config_and_run(f_path=experiment_config_path) -> dict:
 
     Args:
         f_path: Configuration File Path
+        concurrent: Flag to run both encodings using multiprocessing capabilities
 
     Returns:
         dict: A dictionary containing the experiment results
@@ -68,10 +69,12 @@ def get_experiment_config_and_run(f_path=experiment_config_path) -> dict:
         "total_instances_solved_e1": 0,
         "total_instances_timedout_e1": 0,
         "instance_solving_time_e1": [],
+        "instance_data_e1": [],
         "total_solving_time_e2": 0,
         "total_instances_solved_e2": 0,
         "total_instances_timedout_e2": 0,
-        "instance_solving_time_e2": []
+        "instance_solving_time_e2": [],
+        "instance_data_e2": []
     }
 
     num_instances = experiment_config["num_instances"]
@@ -102,7 +105,10 @@ def get_experiment_config_and_run(f_path=experiment_config_path) -> dict:
 
                 for inst in rgp_instances:
                     res = solve(1, 1, inst, timeout_limit)
-                    # Do the same for encoding 2? Use Multiprocessing?
+                    # res = solve(2, 1, inst, timeout_limit)
+
+                    instance_data = res["instance_data"]
+                    experiment_results["instance_data_e1"].append(instance_data)
 
                     if res["status"] != None:
                         logger.debug(f"Time To Solve Instance: {res['tts']}")
@@ -179,7 +185,9 @@ def solve(enc_type: int, solver_flag: int, rgp_instance: dict, timeout: int) -> 
         sat_obj = rgp_to_sat_er(rgp_instance)
         logger.info(f"SAT Object [ER-ENCODER]: {sat_obj}")
 
-    clauses = extract_clauses(sat_obj)
+    clauses,instance_data = extract_clauses_and_instance_data(sat_obj)
+    logger.debug(f"Clauses: {clauses}")
+    logger.debug(f"Instance Data: {instance_data}")
 
     logger.debug(f"Solving Instance...")
 
@@ -188,20 +196,19 @@ def solve(enc_type: int, solver_flag: int, rgp_instance: dict, timeout: int) -> 
     if solver_flag == 1:
         # CADICAL
         solver_name = solvers[0]
-        logger.debug(f"Solver: {solver_name}")
 
     elif solver_flag == 2:
         # MAPLECHRONO
         solver_name = solvers[1]
-        logger.debug(f"Solver: {solver_name}")
 
+    logger.debug(f"Solver: {solver_name}")
     solver = Solver(name=solver_name, bootstrap_with=clauses, use_timer=True, with_proof=True)
+
     satisfiable = solver.solve()
+    logger.debug(f"Satisfiable: {satisfiable}")
 
     elapsed_time = solver.time()
     logger.debug(f"TTS [TimeToSolve]: {elapsed_time} Seconds")
-
-    logger.debug(f"Satisfiable: {satisfiable}")
 
     timeout_flag = False
 
@@ -229,13 +236,14 @@ def solve(enc_type: int, solver_flag: int, rgp_instance: dict, timeout: int) -> 
 
     logger.debug(f"Accumulated Low Level Stats: {solver.accum_stats() or 'No stats available.'}")
 
-    solver.delete()
-
     res = {}
     res["status"] = satisfiable
     res["tts"] = elapsed_time
     res["result"] = result
     res["timed_out"] = timeout_flag
+    res["instance_data"] = instance_data
+
+    solver.delete()
 
     return res
 
