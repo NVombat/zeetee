@@ -2,7 +2,7 @@ import sys
 import time
 import numpy as np
 import matplotlib.pyplot as plt
-from pysat.solvers import Cadical195, MapleChrono, Solver
+from pysat.solvers import Solver
 
 from . import *
 from .logger import create_logger
