@@ -18,13 +18,14 @@ def create_logger(f_name="zt.log", l_name="zt_logger"):
     logger = logging.getLogger(l_name)
     logger.setLevel(logging.DEBUG)
 
+    target_dir = "data"
     fs_foldername = "logfiles"
 
     logging.basicConfig(
         level=logging.DEBUG,
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
         datefmt="%m-%d %H:%M",
-        filename=get_file_path(fs_foldername, f_name),
+        filename=get_file_path(target_dir, fs_foldername, f_name),
         filemode='w'
     )
 

@@ -329,8 +329,11 @@ def generate_rgp_instances(flag: int, n=10, cst_size_type="fixed", n_cst=10, cst
 
     logger.debug(f"Generated RGP Instances: {rgp_instances}")
 
+    target_dir_name = "data"
+    sub_dir_name = "testfiles"
     json_file_name = "rgp_gen_" + str(flag) + ".json"
-    json_file_path = get_file_path("testfiles", json_file_name)
+
+    json_file_path = get_file_path(target_dir_name, sub_dir_name, json_file_name)
 
     write_to_file(rgp_instances, json_file_path)
 

@@ -1,4 +1,4 @@
-from pysat.card import *
+from pysat.card import CardEnc, EncType
 
 from . import *
 from .logger import create_logger
