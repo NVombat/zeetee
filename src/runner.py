@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from pysat.solvers import Solver
 
 from . import *
+from .utils import get_file_path
 from .logger import create_logger
 from .er_encoder import rgp_to_sat_er
 from .mb_encoder import rgp_to_sat_mb
@@ -14,36 +15,42 @@ from .helper import json_to_dict, json_to_rgp, extract_clauses_and_instance_data
 logger = create_logger(l_name="zt_runner")
 
 
-def cactus_plot(times: list) -> None:
+def cactus_plot(times1: list, times2: list) -> None:
     '''
-    Plots a Cactus Plot based on an input array
-    that containts the individual time taken to
-    solve each instance
+    Plots a Cactus Plot based on two input arrays that
+    contain the individual time taken to solve each
+    instance for two different encodings.
 
     Args:
-        times: List of all the individual execution times of instances
+        times1: List of all the individual execution times of instances for encoding 1
+        times2: List of all the individual execution times of instances for encoding 2
 
     Returns:
-        None: Plots a cactus plot
+        None: Plots a cactus plot for both encodings
     '''
-    # Step 1: Sort the times in ascending order
-    sorted_times = np.sort(times)
+    # Step 1: Sort the times in ascending order for both encodings
+    sorted_times1 = np.sort(times1)
+    sorted_times2 = np.sort(times2)
 
-    # Step 2: Compute cumulative time
-    cumulative_times = np.cumsum(sorted_times)
+    # Step 2: Compute cumulative time for both encodings
+    cumulative_times1 = np.cumsum(sorted_times1)
+    cumulative_times2 = np.cumsum(sorted_times2)
 
-    # Step 3: Generate the X-axis (number of solved instances)
-    instances_solved = np.arange(1, len(times) + 1)
+    # Step 3: Generate the X-axis (number of solved instances) for both encodings
+    instances_solved1 = np.arange(1, len(times1) + 1)
+    instances_solved2 = np.arange(1, len(times2) + 1)
 
-    # Step 4: Plot the cactus plot
+    # Step 4: Plot the cactus plot for both encodings
     plt.figure(figsize=(10, 6))
-    plt.plot(instances_solved, cumulative_times, marker='o', linestyle='-', color='b')
+    plt.plot(instances_solved1, cumulative_times1, marker='o', linestyle='-', color='b', label='Encoding 1')
+    plt.plot(instances_solved2, cumulative_times2, marker='s', linestyle='-', color='r', label='Encoding 2')
 
     # Step 5: Labeling and title
     plt.xlabel("Number of Solved Instances")
     plt.ylabel("Total Execution Time (Seconds)")
     plt.title("Cactus Plot of SAT Solver Performance")
     plt.grid(True)
+    plt.legend()
 
     # Show the plot
     plt.show()
@@ -137,12 +144,15 @@ def get_experiment_config_and_run(f_path=experiment_config_path) -> dict:
 
     logger.debug(f"Final Experiment Results: {experiment_results}")
 
+    target_dir = "assets"
+    result_dir = "results"
     json_file_name = "experiment_results.json"
-    json_file_path = get_file_path("logfiles", json_file_name)
+
+    json_file_path = get_file_path(target_dir, result_dir, json_file_name)
 
     write_to_file(experiment_results, json_file_path)
 
-    cactus_plot(experiment_results["instance_solving_time_e1"])
+    cactus_plot(experiment_results["instance_solving_time_e1"], experiment_results["instance_solving_time_e2"])
 
     return experiment_results
 
