@@ -1,3 +1,4 @@
+import os
 import sys
 import json
 import itertools
@@ -212,18 +213,37 @@ def write_to_file(some_dict: dict, json_file_name: str, mode="w") -> None:
         None
     '''
     if not isinstance(mode, str) or mode not in ["a", "w"]:
-        logger.error(f"Incorrect Mode of Writing to File: {mode} Must be a string that is either 'w' or 'a'!")
+        logger.error(f"Incorrect mode of writing to file: {mode}. Must be a string that is either 'w' or 'a'!")
         sys.exit(1)
 
     logger.debug(f"JSON Filename: {json_file_name}")
 
     try:
+        if mode == "a" and os.path.exists(json_file_name):
+            # Read existing content
+            with open(json_file_name, "r") as fh:
+                try:
+                    existing_data = json.load(fh)
+
+                except json.JSONDecodeError:
+                    existing_data = {}
+
+            # Ensure the existing data is a dictionary
+            if not isinstance(existing_data, dict):
+                logger.error("Existing data is not a dictionary... Cannot merge...")
+                return
+
+            # Merge existing data with new data
+            existing_data.update(some_dict)
+            some_dict = existing_data
+
         json_obj = json.dumps(some_dict, indent=4)
 
-        with open(json_file_name, mode) as fh:
+        # Write to file
+        with open(json_file_name, "w") as fh:
             fh.write(json_obj)
 
-        logger.info(f"Successfully wrote JSON data to {json_file_name}")
+        logger.info(f"Successfully wrote/merged JSON data to {json_file_name}")
 
     except FileNotFoundError as e:
         logger.error(f"FileNotFoundError: The file {json_file_name} was not found. {e}")
