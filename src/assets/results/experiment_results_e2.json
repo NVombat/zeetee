@@ -1,0 +1,69 @@
+{
+    "total_solving_time_e2": 0.00043382399999947197,
+    "total_instances_solved_e2": 10,
+    "total_instances_timedout_e2": 0,
+    "instance_solving_time_e2": [
+        2.7812999999987653e-05,
+        5.548099999996836e-05,
+        1.6888999999853382e-05,
+        1.5427000000123314e-05,
+        2.595499999991091e-05,
+        5.345099999987113e-05,
+        5.846399999986929e-05,
+        5.414300000028405e-05,
+        6.0331000000246604e-05,
+        6.586999999935728e-05
+    ],
+    "instance_data_e2": [
+        {
+            "num_clauses": 153,
+            "num_variables": 68,
+            "num_literals": 338
+        },
+        {
+            "num_clauses": 156,
+            "num_variables": 70,
+            "num_literals": 348
+        },
+        {
+            "num_clauses": 160,
+            "num_variables": 68,
+            "num_literals": 359
+        },
+        {
+            "num_clauses": 155,
+            "num_variables": 68,
+            "num_literals": 344
+        },
+        {
+            "num_clauses": 160,
+            "num_variables": 70,
+            "num_literals": 360
+        },
+        {
+            "num_clauses": 496,
+            "num_variables": 107,
+            "num_literals": 1363
+        },
+        {
+            "num_clauses": 494,
+            "num_variables": 107,
+            "num_literals": 1357
+        },
+        {
+            "num_clauses": 491,
+            "num_variables": 105,
+            "num_literals": 1353
+        },
+        {
+            "num_clauses": 494,
+            "num_variables": 106,
+            "num_literals": 1346
+        },
+        {
+            "num_clauses": 492,
+            "num_variables": 105,
+            "num_literals": 1356
+        }
+    ]
+}
