@@ -141,6 +141,7 @@ if __name__ == "__main__":
 
     # rgp_instances = json_to_rgp(test_path_neg)
     # rgp_instances = json_to_rgp(test_path_pos)
+    # rgp_instances = json_to_rgp(test_path_ran)
 
     # Call the SAT Solver on each instance
     for inst in rgp_instances:

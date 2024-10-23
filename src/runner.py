@@ -9,7 +9,7 @@ from .utils import get_file_path
 from .logger import create_logger
 from .er_encoder import rgp_to_sat_er
 from .mb_encoder import rgp_to_sat_mb
-from .generator import generate_rgp_instances
+from .generator import generate_rgp_instances_with_config
 from .helper import json_to_dict, json_to_rgp, extract_clauses_and_instance_data, rgp_dict_to_rgp, write_to_file
 
 logger = create_logger(l_name="zt_runner")
@@ -56,27 +56,109 @@ def cactus_plot(times1: list, times2: list) -> None:
     plt.show()
 
 
-def get_experiment_config_and_run(f_path=experiment_config_path) -> dict:
+def get_experiment_config_and_run_experiment(f_path=experiment_config_path) -> None:
     '''
-    Fetches the experiment configuration stored in a JSON
-    file runs the experiment according to it. Stores all
-    the necessary data to be plotted and presented later
+    MultiProcessing
 
     Args:
-        f_path: Configuration File Path
-        concurrent: Flag to run both encodings using multiprocessing capabilities
+        f_path: Path to the experiment configuration file
+
+    Returns:
+        None: Plots a cactus plot of both the encodings using results
+              provided by the SAT Solver
+    '''
+    flag, top_id = generate_rgp_instances_with_config(flag=2, experiment_config_path=f_path)
+
+    if not flag:
+        logger.error("Instance Generation Issue! Re-Generate Instances Correctly")
+        sys.exit(1)
+
+    rgp_instances = json_to_rgp(exp_path)
+
+    e1_res = run_encoding_1(rgp_instances)
+    logger.debug(f"Experiment Results [E1]: {e1_res}")
+
+    e2_res = run_encoding_2(rgp_instances)
+    logger.debug(f"Experiment Results [E2]: {e2_res}")
+
+    cactus_plot(e1_res["instance_solving_time_e1"], e2_res["instance_solving_time_e2"])
+
+
+def run_encoding_1(rgp_instances: list) -> dict:
+    '''
+    Runs the experiment using ENCODING 1 [MB] and stores all
+    the necessary data to be plotted and presented later.
+
+    Args:
+        rgp_instances: A list of all the instances generated
 
     Returns:
         dict: A dictionary containing the experiment results
     '''
     experiment_config = json_to_dict(experiment_config_path)
+    timeout_limit = experiment_config["timeout"]
 
     experiment_results = {
         "total_solving_time_e1": 0,
         "total_instances_solved_e1": 0,
         "total_instances_timedout_e1": 0,
         "instance_solving_time_e1": [],
-        "instance_data_e1": [],
+        "instance_data_e1": []
+    }
+
+    num_instances_solved = 0
+    total_solving_time = 0
+
+    for inst in rgp_instances:
+        res = solve(1, 1, inst, timeout_limit)
+
+        instance_data = res["instance_data"]
+        experiment_results["instance_data_e1"].append(instance_data)
+
+        if res["status"] != None:
+            logger.debug(f"Time To Solve Instance: {res['tts']}")
+            logger.debug(f"Instance Status: {res['status']}")
+
+            experiment_results["total_solving_time_e1"] += res["tts"]
+            experiment_results["total_instances_solved_e1"] += 1
+
+            experiment_results["instance_solving_time_e1"].append(res["tts"])
+
+            total_solving_time += res["tts"]
+            num_instances_solved += 1
+
+        else:
+            logger.debug("Instance TimeOut! Instance Not Solved!")
+            experiment_results["total_instances_timedout_e1"] += 1
+
+    logger.debug(f"[E1] Final Experiment Results: {experiment_results}")
+
+    target_dir = "assets"
+    result_dir = "results"
+    json_file_name = "experiment_results_e1.json"
+
+    json_file_path = get_file_path(target_dir, result_dir, json_file_name)
+
+    write_to_file(experiment_results, json_file_path)
+
+    return experiment_results
+
+
+def run_encoding_2(rgp_instances: list) -> dict:
+    '''
+    Runs the experiment using ENCODING 2 [ER] and stores all
+    the necessary data to be plotted and presented later.
+
+    Args:
+        rgp_instances: A list of all the instances generated
+
+    Returns:
+        dict: A dictionary containing the experiment results
+    '''
+    experiment_config = json_to_dict(experiment_config_path)
+    timeout_limit = experiment_config["timeout"]
+
+    experiment_results = {
         "total_solving_time_e2": 0,
         "total_instances_solved_e2": 0,
         "total_instances_timedout_e2": 0,
@@ -84,75 +166,40 @@ def get_experiment_config_and_run(f_path=experiment_config_path) -> dict:
         "instance_data_e2": []
     }
 
-    num_instances = experiment_config["num_instances"]
+    num_instances_solved = 0
+    total_solving_time = 0
 
-    num_resources = experiment_config["num_resources"]
-    num_constraints = experiment_config["num_constraints"]
-    constraint_size = experiment_config["constraint_size"] # Can be FIXED OR RANDOM?
+    for inst in rgp_instances:
+        res = solve(2, 1, inst, timeout_limit)
 
-    timeout_limit = experiment_config["timeout"]
+        instance_data = res["instance_data"]
+        experiment_results["instance_data_e2"].append(instance_data)
 
-    for nr in num_resources:
-        logger.debug(f"[EXPERIMENT_RUNNER]: Number of Resources = {nr}")
-        experiment_results_nr = {}
+        if res["status"] != None:
+            logger.debug(f"Time To Solve Instance: {res['tts']}")
+            logger.debug(f"Instance Status: {res['status']}")
 
-        for nc in num_constraints:
-            logger.debug(f"[EXPERIMENT_RUNNER]: Number of Constraints = {nc}")
-            experiment_results_nc = {}
+            experiment_results["total_solving_time_e2"] += res["tts"]
+            experiment_results["total_instances_solved_e2"] += 1
 
-            for cs in constraint_size:
-                logger.debug(f"[EXPERIMENT_RUNNER]: Constraint Size = {cs}")
-                experiment_results_cs = {}
+            experiment_results["instance_solving_time_e2"].append(res["tts"])
 
-                num_instances_solved = 0
-                total_solving_time = 0
+            total_solving_time += res["tts"]
+            num_instances_solved += 1
 
-                rgp_obj = generate_rgp_instances(flag=2, n=nr, cst_size_type="fixed", n_cst=nc, cst_size=cs, num_instance=num_instances)
-                rgp_instances = rgp_dict_to_rgp(rgp_obj)
+        else:
+            logger.debug("Instance TimeOut! Instance Not Solved!")
+            experiment_results["total_instances_timedout_e2"] += 1
 
-                for inst in rgp_instances:
-                    res = solve(1, 1, inst, timeout_limit)
-                    # res = solve(2, 1, inst, timeout_limit)
-
-                    instance_data = res["instance_data"]
-                    experiment_results["instance_data_e1"].append(instance_data)
-
-                    if res["status"] != None:
-                        logger.debug(f"Time To Solve Instance: {res['tts']}")
-                        logger.debug(f"Instance Status: {res['status']}")
-
-                        experiment_results["total_solving_time_e1"] += res["tts"]
-                        experiment_results["total_instances_solved_e1"] += 1
-
-                        experiment_results["instance_solving_time_e1"].append(res["tts"])
-
-                        total_solving_time += res["tts"]
-                        num_instances_solved += 1
-
-                    else:
-                        logger.debug("Instance TimeOut! Instance Not Solved!")
-                        experiment_results["total_instances_timedout_e1"] += 1
-
-                experiment_results_cs[cs] = (total_solving_time, num_instances_solved)
-                logger.debug(f"Experiment Results [Constraint Size = {cs}]: {experiment_results_cs[cs]}")
-
-            experiment_results_nc[nc] = experiment_results_cs
-            logger.debug(f"Experiment Results [Number Of Constraints = {nc}]: {experiment_results_nc[nc]}")
-
-        experiment_results_nr[nr] = experiment_results_nc
-        logger.debug(f"Experiment Results [Number Of Resources = {nr}]: {experiment_results_nr[nr]}")
-
-    logger.debug(f"Final Experiment Results: {experiment_results}")
+    logger.debug(f"[E2] Final Experiment Results: {experiment_results}")
 
     target_dir = "assets"
     result_dir = "results"
-    json_file_name = "experiment_results.json"
+    json_file_name = "experiment_results_e2.json"
 
     json_file_path = get_file_path(target_dir, result_dir, json_file_name)
 
     write_to_file(experiment_results, json_file_path)
-
-    cactus_plot(experiment_results["instance_solving_time_e1"], experiment_results["instance_solving_time_e2"])
 
     return experiment_results
 
@@ -264,5 +311,4 @@ if __name__ == "__main__":
     exp_config_path = experiment_config_path
     logger.debug(f"Experiment Configuration Path: {exp_config_path}")
 
-    exp_res = get_experiment_config_and_run(exp_config_path)
-    logger.debug(f"Experiment Results: {exp_res}")
+    get_experiment_config_and_run_experiment(exp_config_path)
