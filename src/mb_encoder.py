@@ -1,4 +1,4 @@
-from pysat.card import CardEnc, EncType
+from pysat.card import CardEnc, EncType, NoSuchEncodingError
 
 from . import *
 from .logger import create_logger
