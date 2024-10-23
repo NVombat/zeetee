@@ -7,7 +7,7 @@ from itertools import combinations
 
 from .utils import get_file_path
 from .logger import create_logger
-from .helper import generate_unique_pairs, write_to_file
+from .helper import generate_unique_pairs, write_to_file, json_to_dict, rgp_dict_to_rgp
 
 logger = create_logger(l_name="zt_generator")
 
@@ -252,7 +252,16 @@ def generate_constraints(instance_config: dict, elements: list, partitions: list
     return uc,sc
 
 
-def generate_rgp_instances(flag: int, n=10, cst_size_type="fixed", n_cst=10, cst_size=3, num_instance=5) -> dict:
+def generate_rgp_instances(
+    flag: int,
+    n: int = 10,
+    cst_size_type: str = "fixed",
+    n_cst: int = 10,
+    cst_size: int = 3,
+    num_instance: int = 5,
+    top_id: int = -1,
+    exp_config: bool = False
+) -> tuple:
     '''
     Generate negative [UNSAT] or positive [SAT] RGP instances based
     on a flag = 0 [negative], 1 [positive] or 2 [random selection],
@@ -265,9 +274,11 @@ def generate_rgp_instances(flag: int, n=10, cst_size_type="fixed", n_cst=10, cst
         n_cst: Number of constraints
         cst_size: Size of each constraint
         num_instance: Number of instances to be generated
+        top_id: The IDs we assign to instances [instances will be generated with ID=top_id+1 and so on...]
+        exp_config: Flag to decide how we need to store the instances [If we are using experiment config or not]
 
     Returns:
-        dict: Containing "num_instances" instances
+        tuple: Containing "num_instances" instances in a dictionary and the top_id
     '''
     if not isinstance(flag, int) or flag not in range(0,3):
         logger.error(f"Flag {flag} must be an integer that is either 0, 1 or 2")
@@ -285,7 +296,10 @@ def generate_rgp_instances(flag: int, n=10, cst_size_type="fixed", n_cst=10, cst
         "constraint_size": cst_size
     }
 
-    for i in range(0, num_instance):
+    begin_id = top_id+1
+    end_id = begin_id + num_instance
+
+    for i in range(begin_id, end_id):
         inst = {}
         inst["i"] = i
 
@@ -329,20 +343,77 @@ def generate_rgp_instances(flag: int, n=10, cst_size_type="fixed", n_cst=10, cst
 
     logger.debug(f"Generated RGP Instances: {rgp_instances}")
 
-    target_dir_name = "data"
-    sub_dir_name = "testfiles"
-    json_file_name = "rgp_gen_" + str(flag) + ".json"
+    if not exp_config:
+        target_dir_name = "data"
+        sub_dir_name = "testfiles"
 
-    json_file_path = get_file_path(target_dir_name, sub_dir_name, json_file_name)
+        json_file_name = "rgp_gen_test_" + str(flag) + ".json"
+        json_file_path = get_file_path(target_dir_name, sub_dir_name, json_file_name)
+        mode = "w"
 
-    write_to_file(rgp_instances, json_file_path)
+    else:
+        target_dir_name = "assets"
+        sub_dir_name = "files"
 
-    return rgp_instances
+        json_file_name = "rgp_gen_exp.json"
+        json_file_path = get_file_path(target_dir_name, sub_dir_name, json_file_name)
+        mode = "a"
+
+    write_to_file(rgp_instances, json_file_path, mode)
+
+    top_id = end_id-1
+
+    return (rgp_instances, top_id)
+
+
+def generate_rgp_instances_with_config(flag: int, experiment_config_path: str) -> tuple:
+    '''
+    Generate negative [UNSAT] or positive [SAT] RGP instances based
+    on a flag = 0 [negative], 1 [positive] or 2 [random selection],
+    and the experiment configurations specificied. Convert them to
+    a JSON object and write them to a .json file.
+
+    Args:
+        flag: 0/1/2 for negative, positive or random instances [random selection of pos/neg instances]
+        experiment_config_path: Path to experiment configuration file
+
+    Returns:
+        tuple: Contains a boolean flag (T/F) to indicate if the generation
+               of instances was successful and the updated top_id
+    '''
+    experiment_config = json_to_dict(experiment_config_path)
+
+    num_instances = experiment_config["num_instances"]
+
+    num_resources = experiment_config["num_resources"]
+    num_constraints = experiment_config["num_constraints"]
+    constraint_size = experiment_config["constraint_size"]
+
+    total_num_instances = num_instances * len(num_resources) * len(num_constraints) * len(constraint_size)
+    logger.debug(f"Total Number Of Instances: {total_num_instances}")
+
+    top_id = -1
+
+    for nr in num_resources:
+        for nc in num_constraints:
+            for cs in constraint_size:
+                logger.debug(f"Top ID: {top_id}")
+                rgp_obj, new_top_id = generate_rgp_instances(flag=flag, n=nr, cst_size_type="fixed", n_cst=nc, cst_size=cs, num_instance=num_instances, top_id=top_id, exp_config=True)
+
+                rgp_instances = rgp_dict_to_rgp(rgp_obj)
+                top_id = new_top_id
+                logger.debug(f"Updated Top ID: {top_id}")
+
+    if total_num_instances != (top_id+1):
+        logger.error("Error Generating Instances Correctly!")
+        return (False, top_id)
+
+    else:
+        return (True, top_id)
 
 
 if __name__ == "__main__":
     logger.info("********************GENERATOR[LOCAL_TESTING]*********************")
-
-    rgp_instances = generate_rgp_instances(flag=0, n=10)
-    # rgp_instances = generate_rgp_instances(flag=1, n=10)
-    # rgp_instances = generate_rgp_instances(flag=2, n=10)
+    flag, top_id = generate_rgp_instances(flag=0, n=10)
+    # flag, top_id = generate_rgp_instances(flag=1, n=10)
+    # flag, top_id = generate_rgp_instances(flag=2, n=10)
