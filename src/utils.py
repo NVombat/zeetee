@@ -23,7 +23,7 @@ def get_file_path(target_dir: str, foldername: str, filename: str) -> str:
     src_dir = os.path.dirname(__file__)
 
     # Construct the path to the directory
-    if target_dir is "data":
+    if target_dir == "data":
         final_dir = os.path.abspath(os.path.join(src_dir, '..', target_dir, foldername))
 
     else:
