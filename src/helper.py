@@ -2,6 +2,7 @@ import os
 import sys
 import json
 import itertools
+from datetime import datetime
 
 from . import default_jfp
 from .logger import create_logger
@@ -288,3 +289,19 @@ def get_constraint_intersection(constraints: tuple) -> int:
     logger.debug(f"Degree Of Intersection: {degree_of_intersection}")
 
     return int(degree_of_intersection)
+
+
+def generate_timestamp_string() -> str:
+    '''
+    Generate a timestamp and convert it to a string
+
+    Args:
+        None
+
+    Returns:
+        str: A timestamp string
+    '''
+    current_timestamp = datetime.now()
+    timestamp_string = current_timestamp.strftime("%Y-%m-%d %H:%M:%S")
+
+    return timestamp_string
