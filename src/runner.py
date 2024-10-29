@@ -1,6 +1,7 @@
 import sys
 import time
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 from pysat.solvers import Solver
 
@@ -98,6 +99,9 @@ def run_encoding_1(rgp_instances: list) -> dict:
     experiment_config = json_to_dict(experiment_config_path)
     timeout_limit = experiment_config["timeout"]
 
+    experiment_data = []
+    encoding_type = "e1"
+
     experiment_results = {
         "total_solving_time_e1": 0,
         "total_instances_solved_e1": 0,
@@ -110,10 +114,23 @@ def run_encoding_1(rgp_instances: list) -> dict:
     total_solving_time = 0
 
     for inst in rgp_instances:
+        # Store data for each instance and then insert into a list
+        # Create a dataframe from that list
+        temp_data = {}
+
+        temp_data["instance_id"] = inst["i"]
+        temp_data["encoding_type"] = encoding_type
+
         res = solve(1, 1, inst, timeout_limit)
 
         instance_data = res["instance_data"]
         experiment_results["instance_data_e1"].append(instance_data)
+
+        temp_data["num_clauses"] = instance_data["num_clauses"]
+        temp_data["num_variables"] = instance_data["num_variables"]
+        temp_data["num_literals"] = instance_data ["num_literals"]
+
+        temp_data["solving_time"] = res["tts"]
 
         if res["status"] != None:
             logger.debug(f"Time To Solve Instance: {res['tts']}")
@@ -124,22 +141,40 @@ def run_encoding_1(rgp_instances: list) -> dict:
 
             experiment_results["instance_solving_time_e1"].append(res["tts"])
 
+            temp_data["status"] = "SLV"
+
             total_solving_time += res["tts"]
             num_instances_solved += 1
 
         else:
             logger.debug("Instance TimeOut! Instance Not Solved!")
             experiment_results["total_instances_timedout_e1"] += 1
+            temp_data["status"] = "TMO"
+
+        experiment_data.append(temp_data)
 
     logger.debug(f"[E1] Final Experiment Results: {experiment_results}")
 
     target_dir = "assets"
     result_dir = "results"
-    json_file_name = "experiment_results_e1.json"
 
-    json_file_path = get_file_path(target_dir, result_dir, json_file_name)
+    results_file_name = "experiment_results_e1.json"
+    results_file_path = get_file_path(target_dir, result_dir, results_file_name)
 
-    write_to_file(experiment_results, json_file_path)
+    write_to_file(experiment_results, results_file_path)
+
+    logger.debug(f"[E1] Final Experiment Data: {experiment_data}")
+
+    df = pd.DataFrame(experiment_data)
+
+    data_file_name_json = "experiment_data_e1.json"
+    data_file_name_csv = "experiment_data_e1.csv"
+
+    data_file_path_json = get_file_path(target_dir, result_dir, data_file_name_json)
+    data_file_path_csv = get_file_path(target_dir, result_dir, data_file_name_csv)
+
+    df.to_json(data_file_path_json, orient='records', indent=4)
+    df.to_csv(data_file_path_csv, index=False)
 
     return experiment_results
 
@@ -158,6 +193,9 @@ def run_encoding_2(rgp_instances: list) -> dict:
     experiment_config = json_to_dict(experiment_config_path)
     timeout_limit = experiment_config["timeout"]
 
+    experiment_data = []
+    encoding_type = "e2"
+
     experiment_results = {
         "total_solving_time_e2": 0,
         "total_instances_solved_e2": 0,
@@ -170,10 +208,23 @@ def run_encoding_2(rgp_instances: list) -> dict:
     total_solving_time = 0
 
     for inst in rgp_instances:
+        # Store data for each instance and then insert into a list
+        # Create a dataframe from that list
+        temp_data = {}
+
+        temp_data["instance_id"] = inst["i"]
+        temp_data["encoding_type"] = encoding_type
+
         res = solve(2, 1, inst, timeout_limit)
 
         instance_data = res["instance_data"]
         experiment_results["instance_data_e2"].append(instance_data)
+
+        temp_data["num_clauses"] = instance_data["num_clauses"]
+        temp_data["num_variables"] = instance_data["num_variables"]
+        temp_data["num_literals"] = instance_data ["num_literals"]
+
+        temp_data["solving_time"] = res["tts"]
 
         if res["status"] != None:
             logger.debug(f"Time To Solve Instance: {res['tts']}")
@@ -184,22 +235,40 @@ def run_encoding_2(rgp_instances: list) -> dict:
 
             experiment_results["instance_solving_time_e2"].append(res["tts"])
 
+            temp_data["status"] = "SLV"
+
             total_solving_time += res["tts"]
             num_instances_solved += 1
 
         else:
             logger.debug("Instance TimeOut! Instance Not Solved!")
             experiment_results["total_instances_timedout_e2"] += 1
+            temp_data["status"] = "TMO"
+
+        experiment_data.append(temp_data)
 
     logger.debug(f"[E2] Final Experiment Results: {experiment_results}")
 
     target_dir = "assets"
     result_dir = "results"
-    json_file_name = "experiment_results_e2.json"
 
-    json_file_path = get_file_path(target_dir, result_dir, json_file_name)
+    results_file_name = "experiment_results_e2.json"
+    results_file_path = get_file_path(target_dir, result_dir, results_file_name)
 
-    write_to_file(experiment_results, json_file_path)
+    write_to_file(experiment_results, results_file_path)
+
+    logger.debug(f"[E2] Final Experiment Data: {experiment_data}")
+
+    df = pd.DataFrame(experiment_data)
+
+    data_file_name_json = "experiment_data_e2.json"
+    data_file_name_csv = "experiment_data_e2.csv"
+
+    data_file_path_json = get_file_path(target_dir, result_dir, data_file_name_json)
+    data_file_path_csv = get_file_path(target_dir, result_dir, data_file_name_csv)
+
+    df.to_json(data_file_path_json, orient='records', indent=4)
+    df.to_csv(data_file_path_csv, index=False)
 
     return experiment_results
 
@@ -262,6 +331,7 @@ def solve(enc_type: int, solver_flag: int, rgp_instance: dict, timeout: int) -> 
     solver = Solver(name=solver_name, bootstrap_with=clauses, use_timer=True, with_proof=True)
 
     satisfiable = solver.solve()
+    # satisfiable = solver.solve_limited(expect_interrupt=True)
     logger.debug(f"Satisfiable: {satisfiable}")
 
     elapsed_time = solver.time()
@@ -270,6 +340,7 @@ def solve(enc_type: int, solver_flag: int, rgp_instance: dict, timeout: int) -> 
     timeout_flag = False
 
     if satisfiable is None:
+        result = None
         timeout_flag = True
         logger.debug("Solver Timed Out!")
 
@@ -284,6 +355,7 @@ def solve(enc_type: int, solver_flag: int, rgp_instance: dict, timeout: int) -> 
 
     else:
         result = solver.get_proof()
+        # result = solver.get_core()
 
         if result:
             logger.debug(f"No satisfiable solution exists. Proof: {result}")
