@@ -1,3 +1,4 @@
+import math
 from pysat.card import CardEnc, EncType, NoSuchEncodingError
 
 from . import *
@@ -31,7 +32,8 @@ def rgp_to_sat_mb(rgp_obj: dict) -> dict:
     n = rgp_obj["n"]
     logger.debug(f"Number of Resources: {n}")
 
-    t = rgp_obj["t"]
+    sq_n = int(math.sqrt(n))
+    t = sq_n
     logger.debug(f"Maximum Number of Groups (Upperbound): {t}")
 
     lit_id = 1  # To get unique literals
@@ -394,10 +396,10 @@ def rgp_to_sat_mb(rgp_obj: dict) -> dict:
 
         # Totalizer Atmost Constraint
         # totalizer = ITotalizer(lits=card_literals_uc, ubound=b_val, top_id=lit_cnt)
-        # logger.info(f"[UC] TOTALIZER: {totalizer}")
+        # logger.debug(f"[UC] TOTALIZER: {totalizer}")
 
         # totalizer_clauses = totalizer.cnf.clauses
-        # logger.info(f"[UC] Y[r,u] Totalizer Clauses: {totalizer_clauses}")
+        # logger.debug(f"[UC] Y[r,u] Totalizer Clauses: {totalizer_clauses}")
 
         # Updating Literal Count
         # lit_cnt = totalizer.top_id
@@ -405,7 +407,7 @@ def rgp_to_sat_mb(rgp_obj: dict) -> dict:
         # Regular Atmost Constraint - Only generate non-trivial clauses
         if b_val < len(card_literals_uc):
             cnf_uc = CardEnc.atmost(lits=card_literals_uc, bound=b_val, top_id=lit_cnt, encoding=EncType.seqcounter) # default encoding
-            logger.info(f"[UC] CNF: {cnf_uc}")
+            logger.debug(f"[UC] CNF: {cnf_uc}")
 
             cnf_clauses = cnf_uc.clauses
             logger.debug(f"[UC] Y[r,u] Clauses: {cnf_clauses}")
