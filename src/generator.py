@@ -414,6 +414,7 @@ def generate_rgp_instances_with_config(flag: int, experiment_config_path: str) -
 
 if __name__ == "__main__":
     logger.info("********************GENERATOR[LOCAL_TESTING]*********************")
+
     flag, top_id = generate_rgp_instances(flag=0, n=10)
     # flag, top_id = generate_rgp_instances(flag=1, n=10)
     # flag, top_id = generate_rgp_instances(flag=2, n=10)

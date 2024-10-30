@@ -34,17 +34,17 @@ def solve(enc_type: int, solver_flag: int, rgp_instance: dict) -> dict:
         logger.error("Usage: python solver.py enc_type solver [enc_type must be an integer and must be either 1 or 2; solver must be an integer and must be either 1 or 2]")
         sys.exit(1)
 
-    logger.info(f"Encoding Type is set to {enc_type}... Solver is set to {solver_flag}...")
+    logger.debug(f"Encoding Type is set to {enc_type}... Solver is set to {solver_flag}...")
 
     logger.debug("Converting Instance...")
 
     if enc_type == 1:
         sat_obj = rgp_to_sat_mb(rgp_instance)
-        logger.info(f"SAT Object [MB-ENCODER]: {sat_obj}")
+        logger.debug(f"SAT Object [MB-ENCODER]: {sat_obj}")
 
     elif enc_type == 2:
         sat_obj = rgp_to_sat_er(rgp_instance)
-        logger.info(f"SAT Object [ER-ENCODER]: {sat_obj}")
+        logger.debug(f"SAT Object [ER-ENCODER]: {sat_obj}")
 
     clauses,instance_data = extract_clauses_and_instance_data(sat_obj)
     logger.debug(f"Clauses: {clauses}")
@@ -131,7 +131,7 @@ if __name__ == "__main__":
         logger.error("Usage: python solver.py enc_type solver [enc_type must be an integer and must be either 1 or 2; solver must be an integer and must be either 1 or 2]")
         sys.exit(1)
 
-    logger.info(f"Encoding Type is set to {enc_type}... Solver is set to {slv_flag}...")
+    logger.debug(f"Encoding Type is set to {enc_type}... Solver is set to {slv_flag}...")
 
     # Use Default File Path
     rgp_instances = json_to_rgp()
