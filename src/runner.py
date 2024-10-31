@@ -11,7 +11,7 @@ from .logger import create_logger
 from .er_encoder import rgp_to_sat_er
 from .mb_encoder import rgp_to_sat_mb
 from .generator import generate_rgp_instances_with_config
-from .helper import json_to_dict, json_to_rgp, extract_clauses_and_instance_data, rgp_dict_to_rgp, write_to_file
+from .helper import json_to_dict, json_to_rgp, extract_clauses_and_instance_data, write_to_file
 
 logger = create_logger(l_name="zt_runner")
 
@@ -57,7 +57,7 @@ def cactus_plot(times1: list, times2: list) -> None:
     plt.show()
 
 
-def get_experiment_config_and_run_experiment(f_path=experiment_config_path) -> None:
+def get_experiment_config_and_run_experiment(f_path: str = experiment_config_path, run_existing: bool = False) -> None:
     '''
     MultiProcessing
 
@@ -68,6 +68,9 @@ def get_experiment_config_and_run_experiment(f_path=experiment_config_path) -> N
         None: Plots a cactus plot of both the encodings using results
               provided by the SAT Solver
     '''
+    if run_existing:
+        pass
+
     flag, top_id = generate_rgp_instances_with_config(flag=2, experiment_config_path=f_path)
 
     if not flag:
@@ -299,17 +302,17 @@ def solve(enc_type: int, solver_flag: int, rgp_instance: dict, timeout: int) -> 
         logger.error("Encoding Type must be an integer and must be either 1 or 2. Solver Flag must be an integer and must be either 1 or 2")
         sys.exit(1)
 
-    logger.info(f"Encoding Type is set to {enc_type}... Solver is set to {solver_flag}...")
+    logger.debug(f"Encoding Type is set to {enc_type}... Solver is set to {solver_flag}...")
 
     logger.debug("Converting Instance...")
 
     if enc_type == 1:
         sat_obj = rgp_to_sat_mb(rgp_instance)
-        logger.info(f"SAT Object [MB-ENCODER]: {sat_obj}")
+        logger.debug(f"SAT Object [MB-ENCODER]: {sat_obj}")
 
     elif enc_type == 2:
         sat_obj = rgp_to_sat_er(rgp_instance)
-        logger.info(f"SAT Object [ER-ENCODER]: {sat_obj}")
+        logger.debug(f"SAT Object [ER-ENCODER]: {sat_obj}")
 
     clauses,instance_data = extract_clauses_and_instance_data(sat_obj)
     logger.debug(f"Clauses: {clauses}")
@@ -383,4 +386,5 @@ if __name__ == "__main__":
     exp_config_path = experiment_config_path
     logger.debug(f"Experiment Configuration Path: {exp_config_path}")
 
-    get_experiment_config_and_run_experiment(exp_config_path)
+    get_experiment_config_and_run_experiment(exp_config_path, run_existing=False)
+    # get_experiment_config_and_run_experiment(exp_config_path, run_existing=True)
