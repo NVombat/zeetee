@@ -97,7 +97,7 @@ instance_schema = {
                     }
                 }
             },
-            "required": ["i", "n", "t", "partitions", "uc", "sc"],
+            "required": ["i", "n", "t", "partitions", "flag", "uc", "sc"],
             "additionalProperties": False
         }
     },
