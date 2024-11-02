@@ -454,13 +454,11 @@ if __name__ == "__main__":
 
     get_experiment_config_and_run_experiment(exp_config_path, run_existing=False)
 
-    current_dir = os.getcwd()
-    src_dir = "src"
     target_dir = "assets"
     target_subdir = "files"
     filename = "rgp_gen_exp.json"
 
-    existing_fp = os.path.join(current_dir, src_dir, target_dir, target_subdir, filename)
+    existing_fp = get_file_path(target_dir, target_subdir, filename)
     logger.debug(f"Existing File Path: {existing_fp}")
 
     # get_experiment_config_and_run_experiment(exp_config_path, run_existing=True, existing_fp=existing_fp)
