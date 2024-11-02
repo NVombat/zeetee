@@ -59,17 +59,25 @@ def cactus_plot(times1: list, times2: list) -> None:
     plt.show()
 
 
-def get_experiment_config_and_run_experiment(f_path: str = experiment_config_path, run_existing: bool = False, **kwargs) -> None:
+def get_experiment_config_and_run_experiment(
+    f_path: str = experiment_config_path,
+    run_serially: bool = True,
+    run_existing: bool = False,
+    **kwargs
+) -> None:
     '''
     Runs the experiment based on the run_existing Flag. If True, it runs the
     experiment on an existing experiment setup. If False, it generates all
     the instances based on the experiment configuration provided and then
     runs the experiment on the generated instances. If run_existing is True,
     the user needs to provide an additional keyword argument 'existing_fp',
-    passing the path of the existing experiment setup [instances].
+    passing the path of the existing experiment setup [instances]. If run_
+    serially is set to False, encoding 1 and encoding 2 are run on parallel
+    processes.
 
     Args:
         f_path: Path to the experiment configuration file
+        run_serially: Flag to decide whether to run the experiment serially or in parallel
         run_existing: Flag to decide whether to run an existing experiment or not
         **kwargs['existing_fp']: To provide a file path if run_existing == True
 
@@ -77,6 +85,8 @@ def get_experiment_config_and_run_experiment(f_path: str = experiment_config_pat
         None: Plots a cactus plot of both the encodings using results
               provided by the SAT Solver
     '''
+    start_time = time.time()
+
     if run_existing:
         logger.debug("Running Existing Experiment...")
 
@@ -99,11 +109,45 @@ def get_experiment_config_and_run_experiment(f_path: str = experiment_config_pat
 
         rgp_instances = json_to_rgp(exp_path)
 
-    e1_res = run_encoding_1(rgp_instances)
-    logger.debug(f"Experiment Results [E1]: {e1_res}")
+    if run_serially:
+        logger.debug("Running Experiment in Serial...")
 
-    e2_res = run_encoding_2(rgp_instances)
-    logger.debug(f"Experiment Results [E2]: {e2_res}")
+        e1_res = run_encoding_1(rgp_instances)
+        logger.debug(f"Experiment Results [E1]: {e1_res}")
+
+        e2_res = run_encoding_2(rgp_instances)
+        logger.debug(f"Experiment Results [E2]: {e2_res}")
+
+    else:
+        logger.debug("Running Experiment in Parallel...")
+
+        manager = multiprocessing.Manager()
+        e1_res = manager.dict()
+        e2_res = manager.dict()
+
+        def run_e1():
+            result = run_encoding_1(rgp_instances)
+            e1_res.update(result)
+
+        def run_e2():
+            result = run_encoding_2(rgp_instances)
+            e2_res.update(result)
+
+        # Create and start processes for each encoding
+        process1 = multiprocessing.Process(target=run_e1)
+        process2 = multiprocessing.Process(target=run_e2)
+
+        process1.start()
+        process2.start()
+
+        # Wait for both processes to complete
+        process1.join()
+        process2.join()
+
+    end_time = time.time()
+
+    execution_time = end_time - start_time
+    logger.debug(f"Experiment Time: {execution_time:.6f} seconds")
 
     cactus_plot(e1_res["instance_solving_time_e1"], e2_res["instance_solving_time_e2"])
 
@@ -452,7 +496,7 @@ if __name__ == "__main__":
     exp_config_path = experiment_config_path
     logger.debug(f"Experiment Configuration Path: {exp_config_path}")
 
-    get_experiment_config_and_run_experiment(exp_config_path, run_existing=False)
+    get_experiment_config_and_run_experiment(exp_config_path, run_serially=False, run_existing=False)
 
     target_dir = "assets"
     target_subdir = "files"
@@ -461,4 +505,4 @@ if __name__ == "__main__":
     existing_fp = get_file_path(target_dir, target_subdir, filename)
     logger.debug(f"Existing File Path: {existing_fp}")
 
-    # get_experiment_config_and_run_experiment(exp_config_path, run_existing=True, existing_fp=existing_fp)
+    # get_experiment_config_and_run_experiment(exp_config_path, run_serially=False, run_existing=True, existing_fp=existing_fp)
