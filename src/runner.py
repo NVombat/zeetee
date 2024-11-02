@@ -1,7 +1,9 @@
+import os
 import sys
 import time
 import numpy as np
 import pandas as pd
+import multiprocessing
 import matplotlib.pyplot as plt
 from pysat.solvers import Solver
 
@@ -57,27 +59,45 @@ def cactus_plot(times1: list, times2: list) -> None:
     plt.show()
 
 
-def get_experiment_config_and_run_experiment(f_path: str = experiment_config_path, run_existing: bool = False) -> None:
+def get_experiment_config_and_run_experiment(f_path: str = experiment_config_path, run_existing: bool = False, **kwargs) -> None:
     '''
-    MultiProcessing
+    Runs the experiment based on the run_existing Flag. If True, it runs the
+    experiment on an existing experiment setup. If False, it generates all
+    the instances based on the experiment configuration provided and then
+    runs the experiment on the generated instances. If run_existing is True,
+    the user needs to provide an additional keyword argument 'existing_fp',
+    passing the path of the existing experiment setup [instances].
 
     Args:
         f_path: Path to the experiment configuration file
+        run_existing: Flag to decide whether to run an existing experiment or not
+        **kwargs['existing_fp']: To provide a file path if run_existing == True
 
     Returns:
         None: Plots a cactus plot of both the encodings using results
               provided by the SAT Solver
     '''
     if run_existing:
-        pass
+        logger.debug("Running Existing Experiment...")
 
-    flag, top_id = generate_rgp_instances_with_config(flag=2, experiment_config_path=f_path)
+        if "existing_fp" not in kwargs:
+            logger.error("run_existing SET to TRUE: existing_fp Not Provided!")
+            sys.exit(1)
 
-    if not flag:
-        logger.error("Instance Generation Issue! Re-Generate Instances Correctly")
-        sys.exit(1)
+        if not os.path.exists(kwargs['existing_fp']):
+            logger.error("Invalid Existing Path Provided. Please Provide A Valid Existing File Path")
+            sys.exit(1)
 
-    rgp_instances = json_to_rgp(exp_path)
+        rgp_instances = json_to_rgp(kwargs['existing_fp'])
+
+    else:
+        flag, top_id = generate_rgp_instances_with_config(flag=2, experiment_config_path=f_path)
+
+        if not flag:
+            logger.error("Instance Generation Issue! Re-Generate Instances Correctly")
+            sys.exit(1)
+
+        rgp_instances = json_to_rgp(exp_path)
 
     e1_res = run_encoding_1(rgp_instances)
     logger.debug(f"Experiment Results [E1]: {e1_res}")
@@ -333,51 +353,97 @@ def solve(enc_type: int, solver_flag: int, rgp_instance: dict, timeout: int) -> 
     logger.debug(f"Solver: {solver_name}")
     solver = Solver(name=solver_name, bootstrap_with=clauses, use_timer=True, with_proof=True)
 
-    satisfiable = solver.solve()
-    # satisfiable = solver.solve_limited(expect_interrupt=True)
-    logger.debug(f"Satisfiable: {satisfiable}")
+    solver_results = call_solver_with_timeout(solver_obj=solver, timeout=timeout/1000)
+    solver_results["instance_data"] = instance_data
 
-    elapsed_time = solver.time()
-    logger.debug(f"TTS [TimeToSolve]: {elapsed_time} Seconds")
+    # satisfiable = solver.solve()
+    # logger.debug(f"Satisfiable: {satisfiable}")
 
-    timeout_flag = False
+    # elapsed_time = solver.time()
+    # logger.debug(f"TTS [TimeToSolve]: {elapsed_time} Seconds")
 
-    if satisfiable is None:
-        result = None
-        timeout_flag = True
-        logger.debug("Solver Timed Out!")
+    # timeout_flag = False
 
-    elif satisfiable:
-        result = solver.get_model()
+    # if satisfiable is None:
+    #     result = None
+    #     timeout_flag = True
+    #     logger.debug("Solver Timed Out!")
 
-        if result:
-            logger.debug(f"Solution: {result}")
+    # elif satisfiable:
+    #     result = solver.get_model()
 
-        else:
-            logger.debug("No model could be extracted.")
+    #     if result:
+    #         logger.debug(f"Solution: {result}")
 
-    else:
-        result = solver.get_proof()
-        # result = solver.get_core()
+    #     else:
+    #         logger.debug("No model could be extracted.")
 
-        if result:
-            logger.debug(f"No satisfiable solution exists. Proof: {result}")
+    # else:
+    #     result = solver.get_proof()
+    #     # result = solver.get_core()
 
-        else:
-            logger.debug("Proof could not be extracted.")
+    #     if result:
+    #         logger.debug(f"No satisfiable solution exists. Proof: {result}")
 
-    logger.debug(f"Accumulated Low Level Stats: {solver.accum_stats() or 'No stats available.'}")
+    #     else:
+    #         logger.debug("Proof could not be extracted.")
 
-    res = {}
-    res["status"] = satisfiable
-    res["tts"] = elapsed_time
-    res["result"] = result
-    res["timed_out"] = timeout_flag
-    res["instance_data"] = instance_data
+    # logger.debug(f"Accumulated Low Level Stats: {solver.accum_stats() or 'No stats available.'}")
+
+    # res = {}
+    # res["status"] = satisfiable
+    # res["tts"] = elapsed_time
+    # res["result"] = result
+    # res["timed_out"] = timeout_flag
+    # res["instance_data"] = instance_data
+
+    # return res
 
     solver.delete()
 
-    return res
+    return solver_results
+
+
+def call_solver_with_timeout(solver_obj, timeout) -> dict:
+    '''
+    Runs the solver with a timeout. If the solving process exceeds the timeout,
+    it is terminated, and the result is set to None to indicate a timeout
+
+    Args:
+        solver_obj: The solver object that contains the SAT instance to be solved
+        timeout: Maximum time (in seconds) to allow the solver to run
+
+    Returns:
+        dict: A dictionary containing the solver results
+    '''
+    result_dict = multiprocessing.Manager().dict()
+
+    def solver_process(solver_obj, result_dict):
+        satisfiable = solver_obj.solve()
+        elapsed_time = solver_obj.time()
+
+        result_dict["status"] = satisfiable
+        result_dict["tts"] = elapsed_time
+        result_dict["result"] = solver_obj.get_model() if satisfiable else solver_obj.get_proof()
+        result_dict["timed_out"] = False
+
+    p = multiprocessing.Process(target=solver_process, args=(solver_obj, result_dict))
+    p.start()
+
+    p.join(timeout)
+
+    if p.is_alive():
+        p.terminate()
+        p.join()
+
+        result_dict["status"] = None
+        result_dict["tts"] = timeout
+        result_dict["result"] = None
+        result_dict["timed_out"] = True
+
+    solver_obj.delete()
+
+    return result_dict.copy()
 
 
 if __name__ == "__main__":
@@ -387,4 +453,14 @@ if __name__ == "__main__":
     logger.debug(f"Experiment Configuration Path: {exp_config_path}")
 
     get_experiment_config_and_run_experiment(exp_config_path, run_existing=False)
-    # get_experiment_config_and_run_experiment(exp_config_path, run_existing=True)
+
+    current_dir = os.getcwd()
+    src_dir = "src"
+    target_dir = "assets"
+    target_subdir = "files"
+    filename = "rgp_gen_exp.json"
+
+    existing_fp = os.path.join(current_dir, src_dir, target_dir, target_subdir, filename)
+    logger.debug(f"Existing File Path: {existing_fp}")
+
+    # get_experiment_config_and_run_experiment(exp_config_path, run_existing=True, existing_fp=existing_fp)
