@@ -6,6 +6,7 @@ import pandas as pd
 import multiprocessing
 import matplotlib.pyplot as plt
 from pysat.solvers import Solver
+from joblib import Parallel, delayed
 
 from . import *
 from .utils import get_file_path
@@ -143,6 +144,9 @@ def get_experiment_config_and_run_experiment(
         # Wait for both processes to complete
         process1.join()
         process2.join()
+
+        # Joblib option
+        # e1_res, e2_res = Parallel(n_jobs=2)(delayed(func)(rgp_instances) for func in [run_encoding_1, run_encoding_2])
 
     end_time = time.time()
 
