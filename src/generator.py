@@ -7,6 +7,7 @@ from itertools import combinations
 
 from .utils import get_file_path
 from .logger import create_logger
+from . import data_dir, assets_dir, test_sub_dir, files_sub_dir
 from .helper import generate_unique_pairs, write_to_file, json_to_dict, rgp_dict_to_rgp
 
 logger = create_logger(l_name="zt_generator")
@@ -344,16 +345,16 @@ def generate_rgp_instances(
     logger.debug(f"Generated RGP Instances: {rgp_instances}")
 
     if not exp_config:
-        target_dir_name = "data"
-        sub_dir_name = "testfiles"
+        target_dir_name = data_dir
+        sub_dir_name = test_sub_dir
 
         json_file_name = "rgp_gen_test_" + str(flag) + ".json"
         json_file_path = get_file_path(target_dir_name, sub_dir_name, json_file_name)
         mode = "w"
 
     else:
-        target_dir_name = "assets"
-        sub_dir_name = "files"
+        target_dir_name = assets_dir
+        sub_dir_name = files_sub_dir
 
         json_file_name = "rgp_gen_exp.json"
         json_file_path = get_file_path(target_dir_name, sub_dir_name, json_file_name)
