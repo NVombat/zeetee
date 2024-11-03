@@ -6,14 +6,13 @@ import pandas as pd
 import multiprocessing
 import matplotlib.pyplot as plt
 from pysat.solvers import Solver
-from joblib import Parallel, delayed
 
-from . import *
 from .utils import get_file_path
 from .logger import create_logger
 from .er_encoder import rgp_to_sat_er
 from .mb_encoder import rgp_to_sat_mb
 from .generator import generate_rgp_instances_with_config
+from . import assets_dir, files_sub_dir, results_sub_dir, exp_path, experiment_config_path
 from .helper import json_to_dict, json_to_rgp, extract_clauses_and_instance_data, write_to_file
 
 logger = create_logger(l_name="zt_runner")
@@ -148,9 +147,6 @@ def get_experiment_config_and_run_experiment(
         process1.join()
         process2.join()
 
-        # Joblib option
-        # e1_res, e2_res = Parallel(n_jobs=2)(delayed(func)(rgp_instances) for func in [run_encoding_1, run_encoding_2])
-
     end_time = time.time()
 
     execution_time = end_time - start_time
@@ -233,8 +229,8 @@ def run_encoding_1(rgp_instances: list) -> dict:
 
     logger.debug(f"[E1] Final Experiment Results: {experiment_results}")
 
-    target_dir = "assets"
-    result_dir = "results"
+    target_dir = assets_dir
+    result_dir = results_sub_dir
 
     results_file_name = "experiment_results_e1.json"
     results_file_path = get_file_path(target_dir, result_dir, results_file_name)
@@ -327,8 +323,8 @@ def run_encoding_2(rgp_instances: list) -> dict:
 
     logger.debug(f"[E2] Final Experiment Results: {experiment_results}")
 
-    target_dir = "assets"
-    result_dir = "results"
+    target_dir = assets_dir
+    result_dir = results_sub_dir
 
     results_file_name = "experiment_results_e2.json"
     results_file_path = get_file_path(target_dir, result_dir, results_file_name)
@@ -509,8 +505,8 @@ if __name__ == "__main__":
 
     get_experiment_config_and_run_experiment(exp_config_path, run_serially=False, plot_results=True, run_existing=False)
 
-    target_dir = "assets"
-    target_subdir = "files"
+    target_dir = assets_dir
+    target_subdir = files_sub_dir
     filename = "rgp_gen_exp.json"
 
     existing_fp = get_file_path(target_dir, target_subdir, filename)
