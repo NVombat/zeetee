@@ -18,7 +18,7 @@ from .helper import json_to_dict, json_to_rgp, extract_clauses_and_instance_data
 logger = create_logger(l_name="zt_runner")
 
 
-def cactus_plot(times1: list, times2: list) -> None:
+def cactus_plot(times1: list, times2: list, filename: str = "cactus_plot.png") -> None:
     '''
     Plots a Cactus Plot based on two input arrays that
     contain the individual time taken to solve each
@@ -27,9 +27,10 @@ def cactus_plot(times1: list, times2: list) -> None:
     Args:
         times1: List of all the individual execution times of instances for encoding 1
         times2: List of all the individual execution times of instances for encoding 2
+        filename: Name of the file where the plot will be saved (default: "cactus_plot.png")
 
     Returns:
-        None: Plots a cactus plot for both encodings
+        None: Saves and displays a cactus plot for both encodings
     '''
     # Step 1: Sort the times in ascending order for both encodings
     sorted_times1 = np.sort(times1)
@@ -55,8 +56,20 @@ def cactus_plot(times1: list, times2: list) -> None:
     plt.grid(True)
     plt.legend()
 
+    target_dir = assets_dir
+    image_dir = results_sub_dir
+    image_file_path = get_file_path(target_dir, image_dir, filename)
+
+    logger.debug(f"Image File Path: {image_file_path}")
+
+    # Save the plot
+    plt.savefig(image_file_path, format="png", dpi=300)
+
     # Show the plot
     plt.show()
+
+    # Close the plot
+    plt.close()
 
 
 def get_experiment_config_and_run_experiment(
