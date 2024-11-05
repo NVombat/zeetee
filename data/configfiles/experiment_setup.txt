@@ -1,0 +1,8 @@
+hostnamectl -> To get OS Details
+/scratch/${SLURM_JOB_ID} -> Directory for 5 day temporary storage
+
+[cpu2023], [bigmem]
+
+Software Man Pages:
+https://rcs.ucalgary.ca/Managing_software_on_ARC
+https://rcs.ucalgary.ca/Python
