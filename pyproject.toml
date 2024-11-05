@@ -19,6 +19,7 @@ python-sat = {extras = ["aiger", "approxmc", "cryptosat", "pblib"], version = "^
 matplotlib = "^3.9.2"
 numpy = "^2.1.2"
 pandas = "^2.2.3"
+python-dotenv = "^1.0.1"
 
 
 [tool.poetry.group.dev.dependencies]

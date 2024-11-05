@@ -1422,6 +1422,21 @@ files = [
 six = ">=1.5"
 
 [[package]]
+name = "python-dotenv"
+version = "1.0.1"
+description = "Read key-value pairs from a .env file and set them as environment variables"
+category = "main"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "python-dotenv-1.0.1.tar.gz", hash = "sha256:e324ee90a023d808f1959c46bcbc04446a10ced277783dc6ee09987c37ec10ca"},
+    {file = "python_dotenv-1.0.1-py3-none-any.whl", hash = "sha256:f7b63ef50f1b690dddf550d03497b66d609393b40b564ed0d674909a68ebf16a"},
+]
+
+[package.extras]
+cli = ["click (>=5.0)"]
+
+[[package]]
 name = "python-sat"
 version = "1.8.dev13"
 description = "A Python library for prototyping with SAT oracles"
@@ -1976,4 +1991,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "89fa26c3582f69512799665d5e535ee5c43ceb8d05f11fc6c1b4230d0c7bc416"
+content-hash = "d2598900a2f2e02afed812cb6bbc486253d4466aa0afe84a489ef7816ffc79ed"
