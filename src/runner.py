@@ -1,6 +1,7 @@
 import os
 import sys
 import time
+import logging
 import numpy as np
 import pandas as pd
 import multiprocessing
@@ -16,6 +17,10 @@ from . import assets_dir, files_sub_dir, results_sub_dir, exp_path, experiment_c
 from .helper import json_to_dict, json_to_rgp, extract_clauses_and_instance_data, write_to_file
 
 logger = create_logger(l_name="zt_runner")
+
+# Supress default logs for image processing
+logging.getLogger("PIL.PngImagePlugin").setLevel(logging.WARNING)
+logging.getLogger('matplotlib.font_manager').setLevel(logging.WARNING)
 
 
 def cactus_plot(times1: list, times2: list, filename: str = "cactus_plot.png") -> None:
@@ -66,7 +71,7 @@ def cactus_plot(times1: list, times2: list, filename: str = "cactus_plot.png") -
     plt.savefig(image_file_path, format="png", dpi=300)
 
     # Show the plot
-    plt.show()
+    # plt.show()
 
     # Close the plot
     plt.close()
@@ -126,7 +131,7 @@ def get_experiment_config_and_run_experiment(
         rgp_instances = json_to_rgp(exp_path)
 
     if run_serially:
-        logger.debug("Running Experiment in Serial...")
+        logger.info("Running Experiment in Serial...")
 
         e1_res = run_encoding_1(rgp_instances)
         logger.debug(f"Experiment Results [E1]: {e1_res}")
@@ -135,7 +140,7 @@ def get_experiment_config_and_run_experiment(
         logger.debug(f"Experiment Results [E2]: {e2_res}")
 
     else:
-        logger.debug("Running Experiment in Parallel...")
+        logger.info("Running Experiment in Parallel...")
 
         manager = multiprocessing.Manager()
         e1_res = manager.dict()
@@ -163,7 +168,7 @@ def get_experiment_config_and_run_experiment(
     end_time = time.time()
 
     execution_time = end_time - start_time
-    logger.debug(f"Experiment Time: {execution_time:.6f} seconds")
+    logger.info(f"Experiment Time: {execution_time:.6f} seconds")
 
     if plot_results:
         cactus_plot(e1_res["instance_solving_time_e1"], e2_res["instance_solving_time_e2"])
@@ -514,7 +519,7 @@ if __name__ == "__main__":
     logger.info("********************RUNNER[LOCAL_TESTING]*********************")
 
     exp_config_path = experiment_config_path
-    logger.debug(f"Experiment Configuration Path: {exp_config_path}")
+    logger.info(f"Experiment Configuration Path: {exp_config_path}")
 
     get_experiment_config_and_run_experiment(exp_config_path, run_serially=False, plot_results=True, run_existing=False)
 
@@ -523,6 +528,6 @@ if __name__ == "__main__":
     filename = "rgp_gen_exp.json"
 
     existing_fp = get_file_path(target_dir, target_subdir, filename)
-    logger.debug(f"Existing File Path: {existing_fp}")
+    logger.info(f"Existing File Path: {existing_fp}")
 
     # get_experiment_config_and_run_experiment(exp_config_path, run_serially=False, plot_results=True, run_existing=True, existing_fp=existing_fp)

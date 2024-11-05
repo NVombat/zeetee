@@ -118,7 +118,7 @@ if __name__ == "__main__":
         logger.error("Usage: python solver.py enc_type solver [enc_type must be an integer and must be either 1 or 2; solver must be an integer and must be either 1 or 2]")
         sys.exit(1)
 
-    logger.debug(f"Command Line Args: {cl_args}")
+    logger.info(f"Command Line Args: {cl_args}")
 
     try:
         enc_type = int(cl_args[1])
@@ -131,7 +131,7 @@ if __name__ == "__main__":
         logger.error("Usage: python solver.py enc_type solver [enc_type must be an integer and must be either 1 or 2; solver must be an integer and must be either 1 or 2]")
         sys.exit(1)
 
-    logger.debug(f"Encoding Type is set to {enc_type}... Solver is set to {slv_flag}...")
+    logger.info(f"Encoding Type is set to {enc_type}... Solver is set to {slv_flag}...")
 
     # Use Default File Path
     rgp_instances = json_to_rgp()
@@ -146,4 +146,4 @@ if __name__ == "__main__":
     # Call the SAT Solver on each instance
     for inst in rgp_instances:
         res = solve(enc_type, slv_flag, inst)
-        logger.debug(f"Result for RGP Instance: {res}")
+        logger.info(f"Result for RGP Instance: {res}")

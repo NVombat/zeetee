@@ -391,7 +391,7 @@ def generate_rgp_instances_with_config(flag: int, experiment_config_path: str) -
     constraint_size = experiment_config["constraint_size"]
 
     total_num_instances = num_instances * len(num_resources) * len(num_constraints) * len(constraint_size)
-    logger.debug(f"Total Number Of Instances: {total_num_instances}")
+    logger.info(f"Total Number Of Instances: {total_num_instances}")
 
     top_id = -1
 
