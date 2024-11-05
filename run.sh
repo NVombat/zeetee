@@ -53,10 +53,10 @@ if [[ "$filename" == "solver" ]]; then
     fi
 
     # Run solver.py with the provided arguments
-    echo "Running poetry run python -m src.$filename $enc_type $solver &"
-    poetry run python -m "src.$filename" "$enc_type" "$solver" &
+    echo "Running poetry run python -m src.$filename $enc_type $solver"
+    poetry run python -m "src.$filename" "$enc_type" "$solver"
 else
     # Run other Python files without additional arguments
-    echo "Running poetry run python -m src.$filename &"
-    poetry run python -m "src.$filename" &
+    echo "Running poetry run python -m src.$filename"
+    poetry run python -m "src.$filename"
 fi
