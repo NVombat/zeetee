@@ -12,6 +12,7 @@ from .utils import get_file_path
 from .logger import create_logger
 from .er_encoder import rgp_to_sat_er
 from .mb_encoder import rgp_to_sat_mb
+from .mailer import send_mail_with_attachment
 from .generator import generate_rgp_instances_with_config
 from . import assets_dir, files_sub_dir, results_sub_dir, exp_path, experiment_config_path
 from .helper import json_to_dict, json_to_rgp, extract_clauses_and_instance_data, write_to_file
@@ -81,6 +82,7 @@ def get_experiment_config_and_run_experiment(
     f_path: str = experiment_config_path,
     run_serially: bool = True,
     plot_results: bool = True,
+    mail_results: bool = True,
     run_existing: bool = False,
     **kwargs
 ) -> None:
@@ -93,18 +95,21 @@ def get_experiment_config_and_run_experiment(
     passing the path of the existing experiment setup [instances]. If run_
     serially is set to False, encoding 1 and encoding 2 are run as separate
     processes in parallel. If plot_results is set to True, a cactus plot of
-    the two encodings is plot.
+    the two encodings is plot. If mail_results is set to True, a copy of the
+    results is mailed to the user.
 
     Args:
         f_path: Path to the experiment configuration file
         run_serially: Flag to decide whether to run the experiment serially or in parallel
         plot_results: Flag to decide whether to plot the results or not
+        mail_results: Flag to decide whether to email results or not
         run_existing: Flag to decide whether to run an existing experiment or not
         **kwargs['existing_fp']: To provide a file path if run_existing == True
+        **kwargs['target_email_addr']: Target Email ID for mail_results
 
     Returns:
         None: Plots a cactus plot of both the encodings using results
-              provided by the SAT Solver
+              provided by the SAT Solver and emails the results to the user
     '''
     start_time = time.time()
 
@@ -173,8 +178,16 @@ def get_experiment_config_and_run_experiment(
     if plot_results:
         cactus_plot(e1_res["instance_solving_time_e1"], e2_res["instance_solving_time_e2"])
 
-    else:
-        return
+    if mail_results:
+        if "target_email_addr" not in kwargs:
+            logger.debug("Mailing Results to Default Email ID")
+            send_mail_with_attachment()
+
+        else:
+            logger.debug(f"Mailing Results to {kwargs['target_email_addr']}")
+            send_mail_with_attachment(target_email_addr=kwargs['target_email_addr'])
+
+    return
 
 
 def run_encoding_1(rgp_instances: list) -> dict:
@@ -521,7 +534,13 @@ if __name__ == "__main__":
     exp_config_path = experiment_config_path
     logger.info(f"Experiment Configuration Path: {exp_config_path}")
 
-    get_experiment_config_and_run_experiment(exp_config_path, run_serially=False, plot_results=True, run_existing=False)
+    get_experiment_config_and_run_experiment(
+        exp_config_path,
+        run_serially=False,
+        plot_results=True,
+        mail_results=True,
+        run_existing=False
+    )
 
     target_dir = assets_dir
     target_subdir = files_sub_dir
@@ -530,4 +549,14 @@ if __name__ == "__main__":
     existing_fp = get_file_path(target_dir, target_subdir, filename)
     logger.info(f"Existing File Path: {existing_fp}")
 
-    # get_experiment_config_and_run_experiment(exp_config_path, run_serially=False, plot_results=True, run_existing=True, existing_fp=existing_fp)
+    target_email = "testmail@test.com"
+
+    # get_experiment_config_and_run_experiment(
+    #     exp_config_path,
+    #     run_serially=False,
+    #     plot_results=True,
+    #     mail_results=True,
+    #     run_existing=True,
+    #     existing_fp=existing_fp,
+    #     target_email_addr=target_email
+    # )
