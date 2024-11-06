@@ -9,6 +9,12 @@ if __name__ == "__main__":
 
     logger.info(f"Experiment Configuration Path: {experiment_config_path}")
 
-    get_experiment_config_and_run_experiment(experiment_config_path, run_serially=False, plot_results=True, run_existing=False)
+    get_experiment_config_and_run_experiment(
+        experiment_config_path,
+        run_serially=False,
+        plot_results=True,
+        mail_results=True,
+        run_existing=False
+    )
 
     logger.info("Experiment Run Complete...")
