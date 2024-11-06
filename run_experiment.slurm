@@ -2,15 +2,16 @@
 
 # ---------------------------------------------------------------------
 #SBATCH --job-name=zeetee
-#SBATCH --mail-user=nikhill.vombatkere@ucalgary.ca
-#SBATCH --mail-type=BEGIN
-#SBATCH --mail-type=END
+#SBATCH --output=zt_output.log
+#SBATCH --error=zt_error.log
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=40
-#SBATCH --mem=500gb
-#SBATCH --time=30:00:00
+#SBATCH --mem=256gb
+#SBATCH --time=1-00:00:00
 #SBATCH --partition=bigmem
+#SBATCH --mail-user=nikhill.vombatkere@ucalgary.ca
+#SBATCH --mail-type=begin,end,fail
 
 # ---------------------------------------------------------------------
 module load python/3.12.5
