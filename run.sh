@@ -2,8 +2,12 @@
 
 # Main Command : python -m src.filename [optional args]
 
-# Directory where Python files are located
-src_dir="/home/nvombat/Desktop/zeetee/src"
+# Get path to this script
+script_dir="$(dirname "$(realpath "$0")")"
+
+# Directory where Python files are located relative to the script
+src_dir="$script_dir/src"
+echo "Source directory: $src_dir"
 
 # Check if the filename argument is provided
 if [ -z "$1" ]; then
@@ -13,6 +17,8 @@ fi
 
 # Get the filename provided by the user
 filename="$1"
+
+echo "Running File: $filename"
 
 # If the filename contains .py, check if the exact file exists
 if [[ "$filename" == *.py ]]; then
