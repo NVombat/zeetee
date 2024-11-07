@@ -24,7 +24,7 @@ logging.getLogger("PIL.PngImagePlugin").setLevel(logging.WARNING)
 logging.getLogger('matplotlib.font_manager').setLevel(logging.WARNING)
 
 
-def cactus_plot(times1: list, times2: list, filename: str = "cactus_plot.png") -> None:
+def cactus_plot(times1: list, times2: list, filename: str = "cactus_plot.svg") -> None:
     '''
     Plots a Cactus Plot based on two input arrays that
     contain the individual time taken to solve each
@@ -69,7 +69,8 @@ def cactus_plot(times1: list, times2: list, filename: str = "cactus_plot.png") -
     logger.debug(f"Image File Path: {image_file_path}")
 
     # Save the plot
-    plt.savefig(image_file_path, format="png", dpi=300)
+    plt.savefig(image_file_path, format="svg")  # Use "png", "pdf" or "eps" if preferred, set dpi=300 if "png"
+    # plt.savefig(image_file_path, format="png", dpi=300)
 
     # Show the plot
     # plt.show()

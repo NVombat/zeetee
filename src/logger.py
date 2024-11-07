@@ -22,7 +22,7 @@ def create_logger(f_name="zt.log", l_name="zt_logger"):
     fs_foldername = "logfiles"
 
     logging.basicConfig(
-        level=logging.DEBUG,
+        level=logging.INFO,
         format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
         datefmt="%m-%d %H:%M",
         filename=get_file_path(target_dir, fs_foldername, f_name),
@@ -30,7 +30,6 @@ def create_logger(f_name="zt.log", l_name="zt_logger"):
     )
 
     console = logging.StreamHandler()
-    # console.setLevel(logging.DEBUG)
     console.setLevel(logging.INFO)
     formatter = logging.Formatter("%(name)s: %(levelname)s %(message)s")
     console.setFormatter(formatter)
