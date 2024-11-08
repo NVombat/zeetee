@@ -1,6 +1,9 @@
 from .utils import get_file_path
 
 
+# __all__ = []
+
+
 data_dir = "data"
 test_sub_dir = "testfiles"
 config_sub_dir = "configfiles"
