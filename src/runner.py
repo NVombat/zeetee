@@ -503,7 +503,10 @@ def call_solver_with_timeout(solver_obj, timeout) -> dict:
 
     def solver_process(solver_obj, result_dict):
         satisfiable = solver_obj.solve()
+        logger.debug(f"Satisfiable: {satisfiable}")
+
         elapsed_time = solver_obj.time()
+        logger.debug(f"TTS [TimeToSolve]: {elapsed_time} Seconds")
 
         result_dict["status"] = satisfiable
         result_dict["tts"] = elapsed_time
@@ -523,6 +526,8 @@ def call_solver_with_timeout(solver_obj, timeout) -> dict:
         result_dict["tts"] = timeout
         result_dict["result"] = None
         result_dict["timed_out"] = True
+
+        logger.debug("Solver Timed Out!")
 
     solver_obj.delete()
 

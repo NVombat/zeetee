@@ -176,7 +176,7 @@ def generate_constraints(instance_config: dict, elements: list, partitions: list
 
         # Update Total Number of Constraints - Account for 1 UC and Num_Neg_SC SC
         if num_constraints < (num_neg_sc + 1):
-            logger.error("Requested To Generate Fewer Constraints!")
+            logger.warning("Requested To Generate Fewer Constraints!")
 
         else:
             num_constraints = num_constraints - num_neg_sc - 1
@@ -387,21 +387,37 @@ def generate_rgp_instances_with_config(flag: int, experiment_config_path: str) -
     num_instances = experiment_config["num_instances"]
 
     num_resources = experiment_config["num_resources"]
-    num_constraints = experiment_config["num_constraints"]
+    constraint_percentages = experiment_config["constraint_percentages"]
+
     constraint_size = experiment_config["constraint_size"]
 
-    total_num_instances = num_instances * len(num_resources) * len(num_constraints) * len(constraint_size)
+    total_num_instances = num_instances * len(num_resources) * len(constraint_percentages) * len(constraint_size)
     logger.info(f"Total Number Of Instances: {total_num_instances}")
 
     top_id = -1
 
     for nr in num_resources:
-        for nc in num_constraints:
+
+        for cp in constraint_percentages:
+            num_constraints = int((cp*nr)/100)
+            logger.debug(f"Number of Constraints: {num_constraints}")
+
             for cs in constraint_size:
                 logger.debug(f"Top ID: {top_id}")
-                rgp_obj, new_top_id = generate_rgp_instances(flag=flag, n=nr, cst_size_type="fixed", n_cst=nc, cst_size=cs, num_instance=num_instances, top_id=top_id, exp_config=True)
+
+                rgp_obj, new_top_id = generate_rgp_instances(
+                    flag=flag,
+                    n=nr,
+                    cst_size_type="fixed",
+                    n_cst=num_constraints,
+                    cst_size=cs,
+                    num_instance=num_instances,
+                    top_id=top_id,
+                    exp_config=True
+                )
 
                 rgp_instances = rgp_dict_to_rgp(rgp_obj)
+
                 top_id = new_top_id
                 logger.debug(f"Updated Top ID: {top_id}")
 
