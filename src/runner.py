@@ -219,6 +219,9 @@ def run_encoding_1(rgp_instances: list) -> dict:
     num_instances_solved = 0
     total_solving_time = 0
 
+    # For experiment logging: To check how many instances have been gone through
+    track_id = 0
+
     for inst in rgp_instances:
         # Store data for each instance and then insert into a list
         # Create a dataframe from that list
@@ -257,7 +260,12 @@ def run_encoding_1(rgp_instances: list) -> dict:
             experiment_results["total_instances_timedout_e1"] += 1
             temp_data["status"] = "TMO"
 
+            logger.info(f"Instance {track_id} Timed Out!")
+
         experiment_data.append(temp_data)
+
+        logger.info(f"Instance {track_id} Done!")
+        track_id += 1
 
     logger.debug(f"[E1] Final Experiment Results: {experiment_results}")
 
@@ -313,6 +321,9 @@ def run_encoding_2(rgp_instances: list) -> dict:
     num_instances_solved = 0
     total_solving_time = 0
 
+    # For experiment logging: To check how many instances have been gone through
+    track_id = 0
+
     for inst in rgp_instances:
         # Store data for each instance and then insert into a list
         # Create a dataframe from that list
@@ -351,7 +362,12 @@ def run_encoding_2(rgp_instances: list) -> dict:
             experiment_results["total_instances_timedout_e2"] += 1
             temp_data["status"] = "TMO"
 
+            logger.info(f"Instance {track_id} Timed Out!")
+
         experiment_data.append(temp_data)
+
+        logger.info(f"Instance {track_id} Done!")
+        track_id += 1
 
     logger.debug(f"[E2] Final Experiment Results: {experiment_results}")
 
