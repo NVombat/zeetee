@@ -3,6 +3,9 @@
 # Get path to this script
 script_dir="$(dirname "$(realpath "$0")")"
 
+# Find and delete only .log files in the script_dir
+find "$script_dir" -type f -name "*.log" -exec rm -f {} \;
+
 # Directory where log files are located
 log_dir="$script_dir/data/logfiles"
 
