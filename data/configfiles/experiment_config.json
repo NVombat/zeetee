@@ -1,5 +1,5 @@
 {
-    "num_instances": 10,
+    "num_instances": 6,
     "num_resources": [100, 200, 300, 400, 500],
     "constraint_percentages": [25, 50, 75, 100],
     "constraint_size": [5, 10, 15, 20],

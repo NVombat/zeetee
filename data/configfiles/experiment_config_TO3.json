@@ -1,7 +1,0 @@
-{
-    "num_instances": 10,
-    "num_resources": [100, 250, 400, 500, 650, 800, 900, 1000],
-    "constraint_percentages": [25, 50, 75, 100],
-    "constraint_size": [5, 10, 15, 20],
-    "timeout": 360000
-}
