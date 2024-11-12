@@ -10,11 +10,14 @@
 #SBATCH --mem=256gb
 #SBATCH --time=1-00:00:00
 #SBATCH --partition=bigmem
+#SBATCH --exclude=mmg1,mmg2
 #SBATCH --mail-user=nikhill.vombatkere@ucalgary.ca
 #SBATCH --mail-type=begin,end,fail
 
 # ---------------------------------------------------------------------
+echo "Loading python-3.12.5"
 module load python/3.12.5
+echo "Loaded python-3.12.5"
 
 # ---------------------------------------------------------------------
 # Ensure Poetry is available in the PATH
@@ -36,3 +39,5 @@ poetry install
 chmod u+x run.sh
 
 ./run.sh arc_runner
+
+echo "Experiment Run Complete!"
