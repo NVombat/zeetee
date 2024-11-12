@@ -1,5 +1,5 @@
 {
-    "TO1": {
+    "TMO1": {
         "num_instances": 10,
         "num_resources": [100, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 5000],
         "constraint_percentages": [25, 50, 75, 100, 200],
@@ -7,7 +7,7 @@
         "timeout": 360000
     },
 
-    "TO2": {
+    "TMO2": {
         "num_instances": 10,
         "num_resources": [100, 500, 1000, 1500, 2000, 2500],
         "constraint_percentages": [25, 50, 75, 100, 200],
@@ -15,7 +15,7 @@
         "timeout": 360000
     },
 
-    "TO3": {
+    "TMO3": {
         "num_instances": 10,
         "num_resources": [100, 250, 400, 500, 650, 800, 900, 1000],
         "constraint_percentages": [25, 50, 75, 100],
@@ -23,15 +23,11 @@
         "timeout": 360000
     },
 
-    "T04": {
+    "TM04": {
         "num_instances": 10,
         "num_resources": [100, 200, 300, 400, 500],
         "constraint_percentages": [25, 50, 75, 100],
         "constraint_size": [5, 10, 15, 20],
         "timeout": 360000
-    },
-
-    "TO5": {
-
     }
 }

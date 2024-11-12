@@ -1,5 +1,5 @@
 {
-    "T1": {
+    "TST1": {
         "num_instances": 5,
         "num_resources": [5, 10],
         "constraint_percentages": [200, 400],
@@ -7,7 +7,7 @@
         "timeout": 25
     },
 
-    "T2": {
+    "TST2": {
         "num_instances": 5,
         "num_resources": [10, 20, 30, 40, 50],
         "cst_percentage": [50, 100, 150, 200],
@@ -15,7 +15,7 @@
         "timeout": 180000
     },
 
-    "T3": {
+    "TST3": {
         "num_instances": 5,
         "num_resources": [50, 75, 100, 150, 200],
         "cst_percentage": [50, 75, 100, 200],
@@ -23,15 +23,11 @@
         "timeout": 180000
     },
 
-    "T4": {
+    "TST4": {
         "num_instances": 5,
         "num_resources": [5, 75, 100],
         "cst_percentage": [100],
         "constraint_size": [3],
         "timeout": 25
-    },
-
-    "T5": {
-
     }
 }

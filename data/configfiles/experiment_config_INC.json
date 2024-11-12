@@ -1,0 +1,81 @@
+{
+    "INC1": {
+        "num_instances": 6,
+        "num_resources": [100],
+        "constraint_percentages": [25, 50, 75, 100],
+        "constraint_size": [5, 10, 15, 20],
+        "timeout": 360000
+    },
+
+    "INC2": {
+        "num_instances": 6,
+        "num_resources": [200],
+        "constraint_percentages": [25, 50, 75, 100],
+        "constraint_size": [5, 10, 15, 20],
+        "timeout": 360000
+    },
+
+    "INC3": {
+        "num_instances": 6,
+        "num_resources": [300],
+        "constraint_percentages": [25, 50, 75, 100],
+        "constraint_size": [5, 10, 15, 20],
+        "timeout": 360000
+    },
+
+    "INC4": {
+        "num_instances": 6,
+        "num_resources": [400],
+        "constraint_percentages": [25, 50, 75, 100],
+        "constraint_size": [5, 10, 15, 20],
+        "timeout": 360000
+    },
+
+    "INC5": {
+        "num_instances": 6,
+        "num_resources": [500],
+        "constraint_percentages": [25, 50, 75, 100],
+        "constraint_size": [5, 10, 15, 20],
+        "timeout": 360000
+    },
+
+    "INC6": {
+        "num_instances": 6,
+        "num_resources": [600],
+        "constraint_percentages": [25, 50, 75, 100],
+        "constraint_size": [5, 10, 15, 20],
+        "timeout": 360000
+    },
+
+    "INC7": {
+        "num_instances": 6,
+        "num_resources": [700],
+        "constraint_percentages": [25, 50, 75, 100],
+        "constraint_size": [5, 10, 15, 20],
+        "timeout": 360000
+    },
+
+    "INC8": {
+        "num_instances": 6,
+        "num_resources": [800],
+        "constraint_percentages": [25, 50, 75, 100],
+        "constraint_size": [5, 10, 15, 20],
+        "timeout": 360000
+    },
+
+    "INC9": {
+        "num_instances": 6,
+        "num_resources": [900],
+        "constraint_percentages": [25, 50, 75, 100],
+        "constraint_size": [5, 10, 15, 20],
+        "timeout": 360000
+    },
+
+    "INC10": {
+        "num_instances": 6,
+        "num_resources": [1000],
+        "constraint_percentages": [25, 50, 75, 100],
+        "constraint_size": [5, 10, 15, 20],
+        "timeout": 360000
+    }
+}
