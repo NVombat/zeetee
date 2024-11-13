@@ -1,6 +1,7 @@
 import os
 import sys
 
+from .utils import get_file_path
 from .logger import create_logger
 from .runner import get_experiment_config_and_run_experiment
 
