@@ -2,8 +2,8 @@
 
 # ---------------------------------------------------------------------
 #SBATCH --job-name=zeetee_%j
-#SBATCH --output=zt_output_%j.log
-#SBATCH --error=zt_error_%j.log
+#SBATCH --output=../logfiles/zt_output_%j.log
+#SBATCH --error=../logfiles/zt_error_%j.log
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=40
