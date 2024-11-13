@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # ---------------------------------------------------------------------
-#SBATCH --job-name=zeetee
-#SBATCH --output=zt_output.log
-#SBATCH --error=zt_error.log
+#SBATCH --job-name=zeetee_%j
+#SBATCH --output=zt_output_%j.log
+#SBATCH --error=zt_error_%j.log
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=40
@@ -38,6 +38,6 @@ poetry install
 # ---------------------------------------------------------------------
 chmod u+x run.sh
 
-./run.sh arc_runner
+./run.sh arc_runner N200
 
 echo "Experiment Run Complete!"
