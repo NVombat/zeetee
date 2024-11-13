@@ -14,7 +14,7 @@ from .er_encoder import rgp_to_sat_er
 from .mb_encoder import rgp_to_sat_mb
 from .mailer import send_mail_with_attachment
 from .generator import generate_rgp_instances_with_config
-from . import assets_dir, files_sub_dir, results_sub_dir, exp_path, experiment_config_path
+from . import assets_dir, files_sub_dir, results_sub_dir, data_dir, config_sub_dir
 from .helper import json_to_dict, json_to_rgp, extract_clauses_and_instance_data, write_to_file
 
 logger = create_logger(l_name="zt_runner")
@@ -80,8 +80,9 @@ def cactus_plot(times1: list, times2: list, filename: str = "cactus_plot.svg") -
 
 
 def get_experiment_config_and_run_experiment(
-    f_path: str = experiment_config_path,
-    run_serially: bool = True,
+    f_path: str,
+    job_id: int = -1,
+    run_serially: bool = False,
     plot_results: bool = True,
     mail_results: bool = True,
     run_existing: bool = False,
@@ -101,6 +102,7 @@ def get_experiment_config_and_run_experiment(
 
     Args:
         f_path: Path to the experiment configuration file
+        job_id: SLURM Job ID (Unique Identifier)
         run_serially: Flag to decide whether to run the experiment serially or in parallel
         plot_results: Flag to decide whether to plot the results or not
         mail_results: Flag to decide whether to email results or not
@@ -128,21 +130,24 @@ def get_experiment_config_and_run_experiment(
         rgp_instances = json_to_rgp(kwargs['existing_fp'])
 
     else:
-        flag, top_id = generate_rgp_instances_with_config(flag=2, experiment_config_path=f_path)
+        flag, top_id = generate_rgp_instances_with_config(flag=2, experiment_config_path=f_path, job_id=job_id)
 
         if not flag:
             logger.error("Instance Generation Issue! Re-Generate Instances Correctly")
             sys.exit(1)
+
+        gen_instances_filename = f"rgp_gen_exp_{job_id}.json"
+        exp_path = get_file_path(assets_dir, files_sub_dir, gen_instances_filename)
 
         rgp_instances = json_to_rgp(exp_path)
 
     if run_serially:
         logger.info("Running Experiment in Serial...")
 
-        e1_res = run_encoding_1(rgp_instances)
+        e1_res = run_encoding_1(rgp_instances, experiment_config_path=f_path, job_id=job_id)
         logger.debug(f"Experiment Results [E1]: {e1_res}")
 
-        e2_res = run_encoding_2(rgp_instances)
+        e2_res = run_encoding_2(rgp_instances, experiment_config_path=f_path, job_id=job_id)
         logger.debug(f"Experiment Results [E2]: {e2_res}")
 
     else:
@@ -153,11 +158,11 @@ def get_experiment_config_and_run_experiment(
         e2_res = manager.dict()
 
         def run_e1():
-            result = run_encoding_1(rgp_instances)
+            result = run_encoding_1(rgp_instances, experiment_config_path=f_path, job_id=job_id)
             e1_res.update(result)
 
         def run_e2():
-            result = run_encoding_2(rgp_instances)
+            result = run_encoding_2(rgp_instances, experiment_config_path=f_path, job_id=job_id)
             e2_res.update(result)
 
         # Create and start processes for each encoding
@@ -191,13 +196,15 @@ def get_experiment_config_and_run_experiment(
     return
 
 
-def run_encoding_1(rgp_instances: list) -> dict:
+def run_encoding_1(rgp_instances: list, experiment_config_path: str, job_id: int) -> dict:
     '''
     Runs the experiment using ENCODING 1 [MB] and stores all
     the necessary data to be plotted and presented later.
 
     Args:
         rgp_instances: A list of all the instances generated
+        experiment_config_path: Path to the experiment configuration file
+        job_id: SLURM Job ID (Unique Identifier)
 
     Returns:
         dict: A dictionary containing the experiment results
@@ -272,7 +279,7 @@ def run_encoding_1(rgp_instances: list) -> dict:
     target_dir = assets_dir
     result_dir = results_sub_dir
 
-    results_file_name = "experiment_results_e1.json"
+    results_file_name = f"experiment_results_e1_{job_id}.json"
     results_file_path = get_file_path(target_dir, result_dir, results_file_name)
 
     write_to_file(experiment_results, results_file_path)
@@ -281,8 +288,8 @@ def run_encoding_1(rgp_instances: list) -> dict:
 
     df = pd.DataFrame(experiment_data)
 
-    data_file_name_json = "experiment_data_e1.json"
-    data_file_name_csv = "experiment_data_e1.csv"
+    data_file_name_json = f"experiment_data_e1_{job_id}.json"
+    data_file_name_csv = f"experiment_data_e1_{job_id}.csv"
 
     data_file_path_json = get_file_path(target_dir, result_dir, data_file_name_json)
     data_file_path_csv = get_file_path(target_dir, result_dir, data_file_name_csv)
@@ -293,13 +300,15 @@ def run_encoding_1(rgp_instances: list) -> dict:
     return experiment_results
 
 
-def run_encoding_2(rgp_instances: list) -> dict:
+def run_encoding_2(rgp_instances: list, experiment_config_path: str, job_id: int) -> dict:
     '''
     Runs the experiment using ENCODING 2 [ER] and stores all
     the necessary data to be plotted and presented later.
 
     Args:
         rgp_instances: A list of all the instances generated
+        experiment_config_path: Path to the experiment configuration file
+        job_id: SLURM Job ID (Unique Identifier)
 
     Returns:
         dict: A dictionary containing the experiment results
@@ -374,7 +383,7 @@ def run_encoding_2(rgp_instances: list) -> dict:
     target_dir = assets_dir
     result_dir = results_sub_dir
 
-    results_file_name = "experiment_results_e2.json"
+    results_file_name = f"experiment_results_e2_{job_id}.json"
     results_file_path = get_file_path(target_dir, result_dir, results_file_name)
 
     write_to_file(experiment_results, results_file_path)
@@ -383,8 +392,8 @@ def run_encoding_2(rgp_instances: list) -> dict:
 
     df = pd.DataFrame(experiment_data)
 
-    data_file_name_json = "experiment_data_e2.json"
-    data_file_name_csv = "experiment_data_e2.csv"
+    data_file_name_json = f"experiment_data_e2_{job_id}.json"
+    data_file_name_csv = f"experiment_data_e2_{job_id}.csv"
 
     data_file_path_json = get_file_path(target_dir, result_dir, data_file_name_json)
     data_file_path_csv = get_file_path(target_dir, result_dir, data_file_name_csv)
@@ -553,11 +562,13 @@ def call_solver_with_timeout(solver_obj, timeout) -> dict:
 if __name__ == "__main__":
     logger.info("********************RUNNER[LOCAL_TESTING]*********************")
 
-    exp_config_path = experiment_config_path
+    config_filename = "experiment_config_N100.json"
+    exp_config_path = get_file_path(data_dir, config_sub_dir, )
     logger.info(f"Experiment Configuration Path: {exp_config_path}")
 
     get_experiment_config_and_run_experiment(
-        exp_config_path,
+        f_path=exp_config_path,
+        job_id=-1,
         run_serially=False,
         plot_results=True,
         mail_results=True,
@@ -566,7 +577,7 @@ if __name__ == "__main__":
 
     target_dir = assets_dir
     target_subdir = files_sub_dir
-    filename = "rgp_gen_exp.json"
+    filename = "rgp_gen_exp_.json"
 
     existing_fp = get_file_path(target_dir, target_subdir, filename)
     logger.info(f"Existing File Path: {existing_fp}")
@@ -574,7 +585,8 @@ if __name__ == "__main__":
     target_email = "testmail@test.com"
 
     # get_experiment_config_and_run_experiment(
-    #     exp_config_path,
+    #     f_path=exp_config_path,
+    #     job_id = -1,
     #     run_serially=False,
     #     plot_results=True,
     #     mail_results=True,
