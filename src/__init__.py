@@ -25,7 +25,3 @@ false_fmt_jfp = get_file_path(data_dir, test_sub_dir, "rgp_false_fmt.json")
 test_path_neg = get_file_path(data_dir, test_sub_dir, "rgp_gen_test_0.json")
 test_path_pos = get_file_path(data_dir, test_sub_dir, "rgp_gen_test_1.json")
 test_path_ran = get_file_path(data_dir, test_sub_dir, "rgp_gen_test_2.json")
-
-exp_path = get_file_path(assets_dir, files_sub_dir, "rgp_gen_exp.json")
-
-experiment_config_path = get_file_path(data_dir, config_sub_dir, "experiment_config.json")
