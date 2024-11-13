@@ -19,6 +19,8 @@ echo "Loading python-3.12.5"
 module load python/3.12.5
 echo "Loaded python-3.12.5"
 
+cd ..
+
 # ---------------------------------------------------------------------
 # Ensure Poetry is available in the PATH
 export PATH="$HOME/.local/bin:$PATH"
@@ -38,6 +40,6 @@ poetry install
 # ---------------------------------------------------------------------
 chmod u+x run.sh
 
-./run.sh arc_runner N600
+./run.sh arc_runner N10
 
 echo "Experiment Run Complete!"
