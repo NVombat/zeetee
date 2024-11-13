@@ -182,7 +182,8 @@ def get_experiment_config_and_run_experiment(
     logger.info(f"Experiment Time: {execution_time:.6f} seconds")
 
     if plot_results:
-        cactus_plot(e1_res["instance_solving_time_e1"], e2_res["instance_solving_time_e2"])
+        image_file_name = f"cactus_plot_{job_id}.svg"
+        cactus_plot(e1_res["instance_solving_time_e1"], e2_res["instance_solving_time_e2"], image_file_name)
 
     if mail_results:
         if "target_email_addr" not in kwargs:
