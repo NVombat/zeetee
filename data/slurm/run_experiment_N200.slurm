@@ -19,7 +19,7 @@ echo "Loading python-3.12.5"
 module load python/3.12.5
 echo "Loaded python-3.12.5"
 
-cd ..
+cd ../..
 
 # ---------------------------------------------------------------------
 # Ensure Poetry is available in the PATH
