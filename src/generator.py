@@ -261,7 +261,8 @@ def generate_rgp_instances(
     cst_size: int = 3,
     num_instance: int = 5,
     top_id: int = -1,
-    exp_config: bool = False
+    exp_config: bool = False,
+    job_id: int = -1
 ) -> tuple:
     '''
     Generate negative [UNSAT] or positive [SAT] RGP instances based
@@ -277,6 +278,7 @@ def generate_rgp_instances(
         num_instance: Number of instances to be generated
         top_id: The IDs we assign to instances [instances will be generated with ID=top_id+1 and so on...]
         exp_config: Flag to decide how we need to store the instances [If we are using experiment config or not]
+        job_id: SLURM Job ID (Unique Identifier)
 
     Returns:
         tuple: Containing "num_instances" instances in a dictionary and the top_id
@@ -356,7 +358,7 @@ def generate_rgp_instances(
         target_dir_name = assets_dir
         sub_dir_name = files_sub_dir
 
-        json_file_name = "rgp_gen_exp.json"
+        json_file_name = f"rgp_gen_exp_{job_id}.json"
         json_file_path = get_file_path(target_dir_name, sub_dir_name, json_file_name)
         mode = "a"
 
@@ -367,7 +369,7 @@ def generate_rgp_instances(
     return (rgp_instances, top_id)
 
 
-def generate_rgp_instances_with_config(flag: int, experiment_config_path: str) -> tuple:
+def generate_rgp_instances_with_config(flag: int, experiment_config_path: str, job_id: int) -> tuple:
     '''
     Generate negative [UNSAT] or positive [SAT] RGP instances based
     on a flag = 0 [negative], 1 [positive] or 2 [random selection],
@@ -377,6 +379,7 @@ def generate_rgp_instances_with_config(flag: int, experiment_config_path: str) -
     Args:
         flag: 0/1/2 for negative, positive or random instances [random selection of pos/neg instances]
         experiment_config_path: Path to experiment configuration file
+        job_id: SLURM Job ID (Unique Identifier)
 
     Returns:
         tuple: Contains a boolean flag (T/F) to indicate if the generation
@@ -413,7 +416,8 @@ def generate_rgp_instances_with_config(flag: int, experiment_config_path: str) -
                     cst_size=cs,
                     num_instance=num_instances,
                     top_id=top_id,
-                    exp_config=True
+                    exp_config=True,
+                    job_id = job_id
                 )
 
                 rgp_instances = rgp_dict_to_rgp(rgp_obj)
