@@ -3,6 +3,7 @@ import sys
 
 from .utils import get_file_path
 from .logger import create_logger
+from . import data_dir, config_sub_dir
 from .runner import get_experiment_config_and_run_experiment
 
 logger = create_logger(l_name="zt_arc_runner")
