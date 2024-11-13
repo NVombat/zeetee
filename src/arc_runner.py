@@ -30,9 +30,12 @@ if __name__ == "__main__":
     job_id = int(os.environ.get('SLURM_JOB_ID', -1))
     logger.info(f"JOB ID: {job_id}")
 
+    uid = str(job_id) + "_" + config_filename_extension
+    logger.info(f"Unique ID: {uid}")
+
     get_experiment_config_and_run_experiment(
         f_path=experiment_config_path,
-        job_id=job_id,
+        job_id=uid,
         run_serially=False,
         plot_results=True,
         mail_results=True,
