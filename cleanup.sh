@@ -5,6 +5,8 @@ script_dir="$(dirname "$(realpath "$0")")"
 
 # Directory where log files are located
 log_dir="$script_dir/data/logfiles"
+
+# Directory where job specific log files are located
 slurm_log_dir="$script_dir/data/slurm"
 
 # Directory where experiment assets are located
