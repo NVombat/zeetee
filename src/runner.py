@@ -1,6 +1,7 @@
 import os
 import sys
 import time
+import signal
 import logging
 import numpy as np
 import pandas as pd
@@ -22,6 +23,11 @@ logger = create_logger(l_name="zt_runner")
 # Supress default logs for image processing
 logging.getLogger("PIL.PngImagePlugin").setLevel(logging.WARNING)
 logging.getLogger('matplotlib.font_manager').setLevel(logging.WARNING)
+
+
+def handle_timeout(sig, frame):
+    # Timeout Handler()
+    raise TimeoutError('Solver Timed Out!')
 
 
 def cactus_plot(times1: list, times2: list, filename: str = "cactus_plot.svg") -> None:
@@ -462,55 +468,78 @@ def solve(enc_type: int, solver_flag: int, rgp_instance: dict, timeout: int) -> 
     logger.debug(f"Solver: {solver_name}")
     solver = Solver(name=solver_name, bootstrap_with=clauses, use_timer=True, with_proof=True)
 
-    solver_results = call_solver_with_timeout(solver_obj=solver, timeout=timeout/1000)
-    solver_results["instance_data"] = instance_data
+    # Register the signal function handler
+    signal.signal(signal.SIGALRM, handle_timeout)
+    # Define a timeout for your function
+    signal.alarm(int(timeout/1000))
 
-    # satisfiable = solver.solve()
-    # logger.debug(f"Satisfiable: {satisfiable}")
+    timeout_flag = False
 
-    # elapsed_time = solver.time()
-    # logger.debug(f"TTS [TimeToSolve]: {elapsed_time} Seconds")
+    res = {}
 
-    # timeout_flag = False
+    try:
+        start_time = time.time()
+        satisfiable = solver.solve()
+        end_time = time.time()
 
-    # if satisfiable is None:
-    #     result = None
-    #     timeout_flag = True
-    #     logger.debug("Solver Timed Out!")
+        logger.debug(f"Satisfiable: {satisfiable}")
 
-    # elif satisfiable:
-    #     result = solver.get_model()
+        elapsed_time_using_solver = solver.time()
+        logger.debug(f"Elapsed Time (BuiltIn PySAT Method .time()): {elapsed_time_using_solver:.5f} Seconds")
 
-    #     if result:
-    #         logger.debug(f"Solution: {result}")
+        elapsed_time = end_time - start_time
+        logger.debug(f"Elapsed Time: {elapsed_time:.5f} Seconds")
 
-    #     else:
-    #         logger.debug("No model could be extracted.")
+        tts = elapsed_time
 
-    # else:
-    #     result = solver.get_proof()
-    #     # result = solver.get_core()
+        if satisfiable:
+            result = solver.get_model()
 
-    #     if result:
-    #         logger.debug(f"No satisfiable solution exists. Proof: {result}")
+            if result:
+                logger.debug(f"Solution: {result}")
 
-    #     else:
-    #         logger.debug("Proof could not be extracted.")
+            else:
+                logger.debug("No model could be extracted.")
 
-    # logger.debug(f"Accumulated Low Level Stats: {solver.accum_stats() or 'No stats available.'}")
+        else:
+            result = solver.get_proof()
+            # result = solver.get_core()
 
-    # res = {}
-    # res["status"] = satisfiable
-    # res["tts"] = elapsed_time
-    # res["result"] = result
-    # res["timed_out"] = timeout_flag
-    # res["instance_data"] = instance_data
+            if result:
+                logger.debug(f"No satisfiable solution exists. Proof: {result}")
 
-    # return res
+            else:
+                logger.debug("Proof could not be extracted.")
 
-    solver.delete()
+        logger.debug(f"Accumulated Low Level Stats: {solver.accum_stats() or 'No stats available.'}")
 
-    return solver_results
+    except TimeoutError:
+        satisfiable = None
+        timeout_flag = True
+        result = None
+        tts = timeout/1000
+        logger.debug("Solver Timed Out!")
+
+    finally:
+        # Reset the alarm (cancel the timeout)
+        # signal.signal(signal.SIGALRM, signal.SIG_IGN)
+        signal.alarm(0)
+        solver.delete()
+
+    res.update({
+        "status": satisfiable,
+        "tts": tts,
+        "result": result,
+        "timed_out": timeout_flag,
+        "instance_data": instance_data
+    })
+
+    return res
+
+    # solver_results = call_solver_with_timeout(solver_obj=solver, timeout=timeout/1000)
+    # solver_results["instance_data"] = instance_data
+
+    # return solver_results
 
 
 def call_solver_with_timeout(solver_obj, timeout) -> dict:
@@ -563,8 +592,8 @@ def call_solver_with_timeout(solver_obj, timeout) -> dict:
 if __name__ == "__main__":
     logger.info("********************RUNNER[LOCAL_TESTING]*********************")
 
-    config_filename = "experiment_config_N100.json"
-    exp_config_path = get_file_path(data_dir, config_sub_dir, )
+    config_filename = "experiment_config_N10.json"
+    exp_config_path = get_file_path(data_dir, config_sub_dir, config_filename)
     logger.info(f"Experiment Configuration Path: {exp_config_path}")
 
     get_experiment_config_and_run_experiment(
