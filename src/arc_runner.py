@@ -8,6 +8,7 @@ from .runner import get_experiment_config_and_run_experiment
 
 logger = create_logger(l_name="zt_arc_runner")
 
+
 if __name__ == "__main__":
     logger.info("********************ARC_RUNNER[RUNNING EXPERIMENT]*********************")
 
@@ -22,7 +23,7 @@ if __name__ == "__main__":
         experiment_config_path = get_file_path(data_dir, config_sub_dir, exp_config_filename)
 
         if not os.path.exists(experiment_config_path):
-            logger.error("Invalid Configuration Path. Please Provide A Valid Extension")
+            logger.error("Invalid Configuration Path! Please Provide A Valid Extension")
             sys.exit(1)
 
     logger.info(f"Experiment Configuration Path: {experiment_config_path}")
