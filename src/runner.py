@@ -244,6 +244,9 @@ def run_encoding_1(rgp_instances: list, experiment_config_path: str, job_id: int
         temp_data["instance_id"] = inst["i"]
         temp_data["encoding_type"] = encoding_type
 
+        # Storing N value in Data Frame for Plotting Instance Data Statistics
+        temp_data["N"] = inst["n"]
+
         res = solve(1, 1, inst, timeout_limit)
 
         instance_data = res["instance_data"]
