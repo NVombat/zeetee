@@ -40,6 +40,6 @@ poetry install
 # ---------------------------------------------------------------------
 chmod u+x run.sh
 
-./run.sh arc_runner N300
+./run.sh arc_runner N300 1
 
 echo "Experiment Run Complete!"
