@@ -65,15 +65,23 @@ if [[ "$filename" == "solver" ]]; then
 elif [[ "$filename" == "arc_runner" ]]; then
     # Default argument for arc_runner
     arc_arg="DNE"  # Replace with your default argument value
+    int_arg=1
 
     # Allow overriding the default argument if provided
     if [ ! -z "$1" ]; then
         arc_arg="$1"
+        shift
+    fi
+
+    # Allow providing the second argument as an integer
+    if [ ! -z "$1" ]; then
+        int_arg="$1"
+        shift
     fi
 
     # Run arc_runner.py with the additional argument
-    echo "Running poetry run python -m src.$filename $arc_arg"
-    poetry run python -m "src.$filename" "$arc_arg"
+    echo "Running poetry run python -m src.$filename $arc_arg $int_arg"
+    poetry run python -m "src.$filename" "$arc_arg" "$int_arg"
 
 else
     # Run other Python files without additional arguments
