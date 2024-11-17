@@ -15,6 +15,9 @@
 #SBATCH --mail-type=begin,end,fail
 
 # ---------------------------------------------------------------------
+echo "RUN EXPERIMENT - OPERATION FLAG set to 1..."
+
+# ---------------------------------------------------------------------
 echo "Loading python-3.12.5"
 module load python/3.12.5
 echo "Loaded python-3.12.5"

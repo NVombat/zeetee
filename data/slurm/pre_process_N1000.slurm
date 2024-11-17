@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # ---------------------------------------------------------------------
-#SBATCH --job-name=zeetee_%j
-#SBATCH --output=../logfiles/zt_output_%j.log
-#SBATCH --error=../logfiles/zt_error_%j.log
+#SBATCH --job-name=zeetee_preprocess_%j
+#SBATCH --output=../logfiles/zt_output_preprocess_%j.log
+#SBATCH --error=../logfiles/zt_error_preprocess_%j.log
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=40
@@ -15,7 +15,7 @@
 #SBATCH --mail-type=begin,end,fail
 
 # ---------------------------------------------------------------------
-echo "RUN EXPERIMENT - OPERATION FLAG set to 1..."
+echo "PRE-PROCESS EXPERIMENT - OPERATION FLAG set to 2..."
 
 # ---------------------------------------------------------------------
 echo "Loading python-3.12.5"
@@ -43,6 +43,6 @@ poetry install
 # ---------------------------------------------------------------------
 chmod u+x run.sh
 
-./run.sh arc_runner N900 1
+./run.sh arc_runner N1000 2
 
-echo "Experiment Run Complete!"
+echo "Experiment Pre-Processing Complete!"
