@@ -848,10 +848,10 @@ if __name__ == "__main__":
     existing_fp = get_file_path(assets_dir, files_sub_dir, existing_filename)
     logger.info(f"Existing File Path: {existing_fp}")
 
-    sat_obj_filename_e1 = "preprocessed_sat_obj_e1_-1.json"
+    sat_obj_filename_e1 = "preprocessed_sat_obj_e1_N10.json"
     sat_objects_e1_fp = get_file_path(assets_dir, files_sub_dir, sat_obj_filename_e1)
 
-    sat_obj_filename_e2 = "preprocessed_sat_obj_e2_-1.json"
+    sat_obj_filename_e2 = "preprocessed_sat_obj_e2_N10.json"
     sat_objects_e2_fp = get_file_path(assets_dir, files_sub_dir, sat_obj_filename_e2)
 
     target_email = "testmail@test.com"
