@@ -46,7 +46,7 @@ def preprocess_instances_e1(rgp_instances: list, job_id: int) -> str:
     target_dir = assets_dir
     target_sub_dir = files_sub_dir
 
-    sat_obj_filename_e1 = f"preprocessed_sat_obj_e1_{job_id}.json"
+    sat_obj_filename_e1 = f"preprocessed_sat_obj_e1_N{inst['n']}.json"
     sat_obj_e1_fp = get_file_path(target_dir, target_sub_dir, sat_obj_filename_e1)
 
     write_to_file(sat_objects_e1, sat_obj_e1_fp)
@@ -92,7 +92,7 @@ def preprocess_instances_e2(rgp_instances: list, job_id: int) -> str:
     target_dir = assets_dir
     target_sub_dir = files_sub_dir
 
-    sat_obj_filename_e2 = f"preprocessed_sat_obj_e2_{job_id}.json"
+    sat_obj_filename_e2 = f"preprocessed_sat_obj_e2_N{inst['n']}.json"
     sat_obj_e2_fp = get_file_path(target_dir, target_sub_dir, sat_obj_filename_e2)
 
     write_to_file(sat_objects_e2, sat_obj_e2_fp)
