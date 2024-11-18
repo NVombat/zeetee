@@ -112,8 +112,8 @@ if __name__ == "__main__":
             f_path=experiment_config_path,
             job_id=uid,
             run_serially=False,
-            plot_results=True,
-            mail_results=True,
+            plot_results=False,
+            mail_results=False,
             run_existing=False,
             preprocess=True,
             solve_preprocessed=False
