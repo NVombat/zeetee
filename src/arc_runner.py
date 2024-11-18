@@ -60,7 +60,7 @@ if __name__ == "__main__":
         # Get path to assets directory
         folder_path = os.path.abspath(os.path.join(src_dir, assets_dir, files_sub_dir))
 
-        existing_filename = ""
+        existing_filename = "_somefile_"
 
         for file_name in os.listdir(folder_path):
             ext_part = file_name.split('_')[-1]
