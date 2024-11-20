@@ -1,5 +1,7 @@
 import os
 import sys
+import csv
+import json
 import time
 import signal
 import logging
@@ -234,6 +236,8 @@ def get_experiment_config_and_run_experiment(
         # result_e1 = preprocess_results['e1']
         # result_e2 = preprocess_results['e2']
 
+        logger.info("Preprocessing Complete!")
+
         return
 
     if run_serially:
@@ -334,10 +338,10 @@ def run_encoding_1(rgp_instances: list, experiment_config_path: str, job_id: int
     Returns:
         dict: A dictionary containing the experiment results
     '''
+    encoding_type = "e1"
+
     experiment_config = json_to_dict(experiment_config_path)
     timeout_limit = experiment_config["timeout"]
-
-    encoding_type = "e1"
 
     return solve_and_record_results(
         rgp_instances=rgp_instances,
@@ -360,10 +364,10 @@ def run_encoding_2(rgp_instances: list, experiment_config_path: str, job_id: int
     Returns:
         dict: A dictionary containing the experiment results
     '''
+    encoding_type = "e2"
+
     experiment_config = json_to_dict(experiment_config_path)
     timeout_limit = experiment_config["timeout"]
-
-    encoding_type = "e2"
 
     return solve_and_record_results(
         rgp_instances=rgp_instances,
@@ -391,8 +395,6 @@ def solve_and_record_results(rgp_instances: list, encoding_type: str, timeout_li
         logger.error(f"Invalid Encoding Type Given: {encoding_type}. Please Specify A Valid Encoding Type (e1, e2)!")
         sys.exit(1)
 
-    experiment_data = []
-
     experiment_results = {
         f"total_solving_time_{encoding_type}": 0,
         f"total_instances_solved_{encoding_type}": 0,
@@ -417,9 +419,14 @@ def solve_and_record_results(rgp_instances: list, encoding_type: str, timeout_li
     # For experiment logging: To check how many instances have been gone through
     track_id = 0
 
+    # File information
+    target_dir = assets_dir
+    result_dir = results_sub_dir
+
+    data_file_name_csv = f"experiment_data_{encoding_type}_{job_id}.csv"
+    data_file_path_csv = get_file_path(target_dir, result_dir, data_file_name_csv)
+
     for inst in rgp_instances:
-        # Store data for each instance and then insert into a list
-        # Create a dataframe from that list
         temp_data = {}
 
         temp_data["instance_id"] = inst["i"]
@@ -460,33 +467,17 @@ def solve_and_record_results(rgp_instances: list, encoding_type: str, timeout_li
 
             logger.info(f"[{encoding_type.capitalize()}] Instance {track_id} Timed Out!")
 
-        experiment_data.append(temp_data)
+        write_temp_data_to_csv(temp_data, data_file_path_csv)
 
         logger.info(f"[{encoding_type.capitalize()}] Instance {track_id} Done!")
         track_id += 1
 
     logger.debug(f"[{encoding_type.capitalize()}] Final Experiment Results: {experiment_results}")
 
-    target_dir = assets_dir
-    result_dir = results_sub_dir
-
     results_file_name = f"experiment_results_{encoding_type}_{job_id}.json"
     results_file_path = get_file_path(target_dir, result_dir, results_file_name)
 
     write_to_file(experiment_results, results_file_path)
-
-    logger.debug(f"[{encoding_type.capitalize()}] Final Experiment Data: {experiment_data}")
-
-    df = pd.DataFrame(experiment_data)
-
-    data_file_name_json = f"experiment_data_{encoding_type}_{job_id}.json"
-    data_file_name_csv = f"experiment_data_{encoding_type}_{job_id}.csv"
-
-    data_file_path_json = get_file_path(target_dir, result_dir, data_file_name_json)
-    data_file_path_csv = get_file_path(target_dir, result_dir, data_file_name_csv)
-
-    df.to_json(data_file_path_json, orient='records', indent=4)
-    df.to_csv(data_file_path_csv, index=False)
 
     return experiment_results
 
@@ -628,6 +619,32 @@ def solve_with_timeout(solver_flag: int, clauses: list, instance_data: dict, tim
     # return solver_results
 
 
+def write_temp_data_to_csv(temp_data: dict, csv_file_path: str) -> None:
+    """
+    Write a single temp_data record to a CSV file.
+
+    Args:
+        temp_data: Dictionary containing instance results
+        csv_file_path: Path to the CSV file
+
+    Returns:
+        None
+    """
+    file_exists = os.path.isfile(csv_file_path)
+
+    with open(csv_file_path, mode='a', newline='') as csv_file:
+        writer = csv.DictWriter(csv_file, fieldnames=temp_data.keys())
+
+        if not file_exists:
+            # Write header only once
+            logger.debug("Writing Headers...")
+            writer.writeheader()
+
+        writer.writerow(temp_data)
+
+    return
+
+
 def solve_preprocessed_e1(sat_obj_fp_e1: str, timeout: int, job_id: int) -> dict:
     '''
     Solves preprocessed SAT objects stored in a JSON file
@@ -697,8 +714,6 @@ def solve_and_record_results_preprocessed(sat_objects: dict, encoding_type: str,
 
     slv_flag = 1
 
-    experiment_data = []
-
     experiment_results = {
         f"total_solving_time_{encoding_type}": 0,
         f"total_instances_solved_{encoding_type}": 0,
@@ -713,9 +728,14 @@ def solve_and_record_results_preprocessed(sat_objects: dict, encoding_type: str,
     # For experiment logging: To check how many instances have been gone through
     track_id = 0
 
+    # File Information
+    target_dir = assets_dir
+    result_dir = results_sub_dir
+
+    data_file_name_csv = f"experiment_data_preprocessed_{encoding_type}_{job_id}.csv"
+    data_file_path_csv = get_file_path(target_dir, result_dir, data_file_name_csv)
+
     for i in range (0, num_sat_objects):
-        # Store data for each instance and then insert into a list
-        # Create a dataframe from that list
         dict_index = str(i)
 
         temp_data = {}
@@ -759,33 +779,17 @@ def solve_and_record_results_preprocessed(sat_objects: dict, encoding_type: str,
 
             logger.info(f"[{encoding_type.capitalize()}] Instance {track_id} Timed Out!")
 
-        experiment_data.append(temp_data)
+        write_temp_data_to_csv(temp_data, data_file_path_csv)
 
         logger.info(f"[{encoding_type.capitalize()}] Instance {track_id} Done!")
         track_id += 1
 
     logger.debug(f"[{encoding_type.capitalize()}] Final Experiment Results: {experiment_results}")
 
-    target_dir = assets_dir
-    result_dir = results_sub_dir
-
     results_file_name = f"experiment_results_preprocessed_{encoding_type}_{job_id}.json"
     results_file_path = get_file_path(target_dir, result_dir, results_file_name)
 
     write_to_file(experiment_results, results_file_path)
-
-    logger.debug(f"[{encoding_type.capitalize()}] Final Experiment Data: {experiment_data}")
-
-    df = pd.DataFrame(experiment_data)
-
-    data_file_name_json = f"experiment_data_preprocessed_{encoding_type}_{job_id}.json"
-    data_file_name_csv = f"experiment_data_preprocessed_{encoding_type}_{job_id}.csv"
-
-    data_file_path_json = get_file_path(target_dir, result_dir, data_file_name_json)
-    data_file_path_csv = get_file_path(target_dir, result_dir, data_file_name_csv)
-
-    df.to_json(data_file_path_json, orient='records', indent=4)
-    df.to_csv(data_file_path_csv, index=False)
 
     return experiment_results
 
