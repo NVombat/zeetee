@@ -21,35 +21,26 @@ def preprocess_instances_e1(rgp_instances: list, job_id: int) -> str:
     Returns:
         str: Path to SAT Objects
     '''
-    sat_objects_e1 = {}
+    encoding_type = "e1"
     sat_object_cnt_e1 = 0
-
-    for inst in rgp_instances:
-        temp_obj = {}
-
-        temp_obj["i"] = inst["i"]
-        temp_obj["N"] = inst["n"]
-
-        sat_obj = rgp_to_sat_mb(inst)
-        logger.debug(f"SAT Object [MB-ENCODER]: {sat_obj}")
-
-        clauses,instance_data = extract_clauses_and_instance_data(sat_obj)
-        logger.debug(f"Clauses: {clauses}")
-        logger.debug(f"Instance Data: {instance_data}")
-
-        temp_obj["clauses"] = clauses
-        temp_obj["instance_data"] = instance_data
-
-        sat_objects_e1[sat_object_cnt_e1] = temp_obj
-        sat_object_cnt_e1 += 1
 
     target_dir = assets_dir
     target_sub_dir = files_sub_dir
 
-    sat_obj_filename_e1 = f"preprocessed_sat_obj_e1_N{inst['n']}.json"
+    sat_obj_filename_e1 = f"preprocessed_sat_obj_e1_N{rgp_instances[0]['n']}.json"
     sat_obj_e1_fp = get_file_path(target_dir, target_sub_dir, sat_obj_filename_e1)
 
-    write_to_file(sat_objects_e1, sat_obj_e1_fp)
+    for inst in rgp_instances:
+        preprocess_helper(
+            instance=inst,
+            filepath=sat_obj_e1_fp,
+            encoding_type=encoding_type,
+            index=sat_object_cnt_e1
+        )
+
+        sat_object_cnt_e1 += 1
+
+    logger.info(f"[{encoding_type.capitalize()}] Preprocessing Complete!")
 
     return sat_obj_e1_fp
 
@@ -67,37 +58,78 @@ def preprocess_instances_e2(rgp_instances: list, job_id: int) -> str:
     Returns:
         str: Path to SAT Objects
     '''
-    sat_objects_e2 = {}
+    encoding_type = "e2"
     sat_object_cnt_e2 = 0
-
-    for inst in rgp_instances:
-        temp_obj = {}
-
-        temp_obj["i"] = inst["i"]
-        temp_obj["N"] = inst["n"]
-
-        sat_obj = rgp_to_sat_er(inst)
-        logger.debug(f"SAT Object [ER-ENCODER]: {sat_obj}")
-
-        clauses,instance_data = extract_clauses_and_instance_data(sat_obj)
-        logger.debug(f"Clauses: {clauses}")
-        logger.debug(f"Instance Data: {instance_data}")
-
-        temp_obj["clauses"] = clauses
-        temp_obj["instance_data"] = instance_data
-
-        sat_objects_e2[sat_object_cnt_e2] = temp_obj
-        sat_object_cnt_e2 += 1
 
     target_dir = assets_dir
     target_sub_dir = files_sub_dir
 
-    sat_obj_filename_e2 = f"preprocessed_sat_obj_e2_N{inst['n']}.json"
+    sat_obj_filename_e2 = f"preprocessed_sat_obj_e2_N{rgp_instances[0]['n']}.json"
     sat_obj_e2_fp = get_file_path(target_dir, target_sub_dir, sat_obj_filename_e2)
 
-    write_to_file(sat_objects_e2, sat_obj_e2_fp)
+    for inst in rgp_instances:
+        preprocess_helper(
+            instance=inst,
+            filepath=sat_obj_e2_fp,
+            encoding_type=encoding_type,
+            index=sat_object_cnt_e2
+        )
+
+        sat_object_cnt_e2 += 1
+
+    logger.info(f"[{encoding_type.capitalize()}] Preprocessing Complete!")
 
     return sat_obj_e2_fp
+
+
+def preprocess_helper(instance: dict, filepath: str, encoding_type: str, index: int) -> None:
+    '''
+    Converts an RGP instance to a SAT object and writes it to file
+
+    Args:
+        instance: A single RGP instance
+        filepath: Path to file containing SAT objects
+        encoding_type: Encoding Type E1 or E2
+        index: What index to add SAT object to in the dictionary
+
+    Returns:
+        None: Writes SAT Object to file
+    '''
+    if not isinstance(encoding_type, str) or encoding_type not in ["e1", "e2"]:
+        logger.error(f"Invalid Encoding Type Given: {encoding_type}. Please Specify A Valid Encoding Type (e1, e2)!")
+        sys.exit(1)
+
+    temp_obj = {}
+
+    temp_obj["i"] = instance["i"]
+    temp_obj["N"] = instance["n"]
+
+    if encoding_type == "e1":
+        sat_obj = rgp_to_sat_mb(instance)
+
+    elif encoding_type == "e2":
+        sat_obj = rgp_to_sat_er(instance)
+
+    logger.debug(f"[{encoding_type.capitalize()}] SAT Object: {sat_obj}")
+
+    clauses,instance_data = extract_clauses_and_instance_data(sat_obj)
+    logger.debug(f"Clauses: {clauses}")
+    logger.debug(f"Instance Data: {instance_data}")
+
+    temp_obj["clauses"] = clauses
+    temp_obj["instance_data"] = instance_data
+
+    sat_obj_temp = {}
+    sat_obj_temp[index] = temp_obj
+
+    mode = "a"
+    write_to_file(sat_obj_temp, filepath, mode)
+
+    logger.info(f"[{encoding_type.capitalize()}] Instance {index} Preprocessed! Written To File!")
+
+    del temp_obj, sat_obj_temp, sat_obj, clauses, instance_data
+
+    return
 
 
 if __name__ == "__main__":
