@@ -7,7 +7,7 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=40
-#SBATCH --mem=256gb
+#SBATCH --mem=500gb
 #SBATCH --time=1-00:00:00
 #SBATCH --partition=bigmem
 #SBATCH --exclude=mmg1,mmg2
