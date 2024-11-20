@@ -89,6 +89,11 @@ def send_mail_with_attachment(folder_name: str = assets_dir, target_email_addr: 
 
     for root, _, files in os.walk(folder_path):
         for file_name in files:
+            f_check = file_name.split("_")[0]
+            if f_check == "preprocessed":
+                logger.warning("Ignoring Preprocessed Files: Size Too Big!")
+                continue
+
             file_path = os.path.join(root, file_name)
 
             try:
