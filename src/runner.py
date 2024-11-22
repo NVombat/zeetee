@@ -17,9 +17,9 @@ from .er_encoder import rgp_to_sat_er
 from .mb_encoder import rgp_to_sat_mb
 from .mailer import send_mail_with_attachment
 from .generator import generate_rgp_instances_with_config
+from .helper import json_to_dict, json_to_rgp, write_to_file
 from .preprocessor import preprocess_instances_e1, preprocess_instances_e2
 from . import assets_dir, files_sub_dir, results_sub_dir, data_dir, config_sub_dir
-from .helper import json_to_dict, json_to_rgp, extract_clauses_and_instance_data, write_to_file
 
 logger = create_logger(l_name="zt_runner")
 
@@ -520,7 +520,9 @@ def solve(enc_type: int, solver_flag: int, rgp_instance: dict, timeout: int) -> 
         sat_obj = rgp_to_sat_er(rgp_instance)
         logger.debug(f"SAT Object [ER-ENCODER]: {sat_obj}")
 
-    clauses,instance_data = extract_clauses_and_instance_data(sat_obj)
+    clauses = sat_obj["final_clauses"]
+    instance_data = sat_obj["instance_data"]
+
     logger.debug(f"Clauses: {clauses}")
     logger.debug(f"Instance Data: {instance_data}")
 
