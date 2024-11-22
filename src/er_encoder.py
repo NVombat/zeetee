@@ -1,3 +1,4 @@
+from pysat.formula import CNF
 from pysat.card import CardEnc, EncType, NoSuchEncodingError
 
 from . import *
@@ -7,7 +8,7 @@ from .helper import get_key_by_value, json_to_rgp
 logger = create_logger(l_name="zt_er_encoder")
 
 
-def rgp_to_sat_er(rgp_obj: dict, clause_verbosity: int = 1) -> dict:
+def rgp_to_sat_er(rgp_obj: dict, clause_verbosity: int = 1, save_cnf_to_file: bool = False, **kwargs) -> dict:
     '''
     Takes an RGP dictionary object and returns a SAT
     dictionary object w.r.t the second encoding which
@@ -16,6 +17,8 @@ def rgp_to_sat_er(rgp_obj: dict, clause_verbosity: int = 1) -> dict:
     Args:
         rgp_obj: RGP dictionary object
         clause_verbosity: Flag to decide amount of detail in SAT Object for Clauses [1: Low, 2: High]
+        save_cnf_to_file: Flag to decide if CNF Object should be saved to File
+        **kwargs['output_cnf_fp']: File Path to store CNF Object
 
     Returns:
         dict: SAT dictionary object
@@ -23,6 +26,15 @@ def rgp_to_sat_er(rgp_obj: dict, clause_verbosity: int = 1) -> dict:
     if not isinstance(clause_verbosity, int) or clause_verbosity not in range(1, 3):
         logger.error("Clause Verbosity Needs To Be An Integer = [1,2]! Please Provide a Valid Input")
         sys.exit(1)
+
+    if save_cnf_to_file:
+        if "output_cnf_fp" not in kwargs:
+            logger.error("save_cnf_to_file SET to TRUE: output_cnf_fp Not Provided!")
+            sys.exit(1)
+
+        if os.path.exists(kwargs['output_cnf_fp']):
+            logger.error("Existing Path Provided. Please Provide A Path That Does Not Already Exist")
+            sys.exit(1)
 
     sat_obj = {}
 
@@ -36,6 +48,9 @@ def rgp_to_sat_er(rgp_obj: dict, clause_verbosity: int = 1) -> dict:
     # To gather instance data
     final_clauses = []
     total_num_literals = 0
+
+    # Create a CNF object
+    cnf = CNF()
 
     n = rgp_obj["n"]
     logger.debug(f"Number of Resources: {n}")
@@ -577,6 +592,14 @@ def rgp_to_sat_er(rgp_obj: dict, clause_verbosity: int = 1) -> dict:
 
     logger.debug(f"Instance Data: {instance_data}")
     sat_obj["instance_data"] = instance_data
+
+    cnf.extend(final_clauses)
+
+    if save_cnf_to_file:
+        cnf.to_file(kwargs['output_cnf_fp'])
+        logger.info(f"CNF Saved To File: {kwargs['output_cnf_fp']}")
+
+    sat_obj["cnf_object"] = cnf
 
     sat_obj["literals"] = literals
 
