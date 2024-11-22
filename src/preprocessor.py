@@ -1,9 +1,9 @@
 from .utils import get_file_path
 from .logger import create_logger
+from .helper import write_to_file
 from .er_encoder import rgp_to_sat_er
 from .mb_encoder import rgp_to_sat_mb
 from . import assets_dir, files_sub_dir
-from .helper import extract_clauses_and_instance_data, write_to_file
 
 logger = create_logger(l_name="zt_preprocessor")
 
@@ -112,12 +112,8 @@ def preprocess_helper(instance: dict, filepath: str, encoding_type: str, index: 
 
     logger.debug(f"[{encoding_type.capitalize()}] SAT Object: {sat_obj}")
 
-    clauses,instance_data = extract_clauses_and_instance_data(sat_obj)
-    logger.debug(f"Clauses: {clauses}")
-    logger.debug(f"Instance Data: {instance_data}")
-
-    temp_obj["clauses"] = clauses
-    temp_obj["instance_data"] = instance_data
+    temp_obj["clauses"] = sat_obj["final_clauses"]
+    temp_obj["instance_data"] = sat_obj["instance_data"]
 
     sat_obj_temp = {}
     sat_obj_temp[index] = temp_obj
@@ -127,7 +123,7 @@ def preprocess_helper(instance: dict, filepath: str, encoding_type: str, index: 
 
     logger.info(f"[{encoding_type.capitalize()}] Instance {index} Preprocessed! Written To File!")
 
-    del temp_obj, sat_obj_temp, sat_obj, clauses, instance_data
+    del sat_obj, temp_obj, sat_obj_temp
 
     return
 
