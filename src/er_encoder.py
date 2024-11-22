@@ -2,12 +2,12 @@ from pysat.card import CardEnc, EncType, NoSuchEncodingError
 
 from . import *
 from .logger import create_logger
-from .helper import get_key_by_value, json_to_rgp, extract_clauses_and_instance_data
+from .helper import get_key_by_value, json_to_rgp
 
 logger = create_logger(l_name="zt_er_encoder")
 
 
-def rgp_to_sat_er(rgp_obj: dict) -> dict:
+def rgp_to_sat_er(rgp_obj: dict, clause_verbosity: int = 1) -> dict:
     '''
     Takes an RGP dictionary object and returns a SAT
     dictionary object w.r.t the second encoding which
@@ -15,10 +15,15 @@ def rgp_to_sat_er(rgp_obj: dict) -> dict:
 
     Args:
         rgp_obj: RGP dictionary object
+        clause_verbosity: Flag to decide amount of detail in SAT Object for Clauses [1: Low, 2: High]
 
     Returns:
         dict: SAT dictionary object
     '''
+    if not isinstance(clause_verbosity, int) or clause_verbosity not in range(1, 3):
+        logger.error("Clause Verbosity Needs To Be An Integer = [1,2]! Please Provide a Valid Input")
+        sys.exit(1)
+
     sat_obj = {}
 
     literal_mappings = {} # only for resources (xij)
@@ -27,6 +32,10 @@ def rgp_to_sat_er(rgp_obj: dict) -> dict:
 
     literals = []
     clauses = {}
+
+    # To gather instance data
+    final_clauses = []
+    total_num_literals = 0
 
     n = rgp_obj["n"]
     logger.debug(f"Number of Resources: {n}")
@@ -204,12 +213,22 @@ def rgp_to_sat_er(rgp_obj: dict) -> dict:
                 tc_2 = [-xij, xjk, -xik]
                 tc_3 = [xij, -xjk, -xik]
 
-                transitivity_clauses.append(tc_1)
-                transitivity_clauses.append(tc_2)
-                transitivity_clauses.append(tc_3)
+                if clause_verbosity > 1:
+                    transitivity_clauses.append(tc_1)
+                    transitivity_clauses.append(tc_2)
+                    transitivity_clauses.append(tc_3)
 
-    logger.debug(f"Transitivity Clauses: {transitivity_clauses}")
-    clauses["transitivity_clauses"] = transitivity_clauses
+                final_clauses.append(tc_1)
+                final_clauses.append(tc_2)
+                final_clauses.append(tc_3)
+
+                total_num_literals += len(tc_1)
+                total_num_literals += len(tc_2)
+                total_num_literals += len(tc_3)
+
+    if clause_verbosity > 1:
+        logger.debug(f"Transitivity Clauses: {transitivity_clauses}")
+        clauses["transitivity_clauses"] = transitivity_clauses
 
     # Encode UC and SC clause (2)
     logger.debug("********************CLAUSE(2)********************")
@@ -223,7 +242,11 @@ def rgp_to_sat_er(rgp_obj: dict) -> dict:
         lit = get_key_by_value(temp_row_r, (r,1))
         logger.debug(f"Literal Set To True: {lit}")
 
-        y_val_clauses.append([lit])
+        if clause_verbosity > 1:
+            y_val_clauses.append([lit])
+
+        final_clauses.append([lit])
+        total_num_literals += 1
 
     for r in range (1, num_sc+1):
         # For every SC
@@ -233,10 +256,15 @@ def rgp_to_sat_er(rgp_obj: dict) -> dict:
         lit = get_key_by_value(temp_row_r, (r,1))
         logger.debug(f"Literal Set To True: {lit}")
 
-        y_val_clauses.append([lit])
+        if clause_verbosity > 1:
+            y_val_clauses.append([lit])
 
-    logger.debug(f"Y Value Clauses: {y_val_clauses}")
-    clauses["y_val_clauses"] = y_val_clauses
+        final_clauses.append([lit])
+        total_num_literals += 1
+
+    if clause_verbosity > 1:
+        logger.debug(f"Y Value Clauses: {y_val_clauses}")
+        clauses["y_val_clauses"] = y_val_clauses
 
     # Encode UC and SC clause (3) - ((1∨2∨3)∨4)∧(¬1∧¬2∧¬3→4) = (1∨2∨3∨4)∧(¬1∨4)∧(¬2∨4)∧(¬3∨4)
     logger.debug("********************CLAUSE(3)********************")
@@ -275,8 +303,12 @@ def rgp_to_sat_er(rgp_obj: dict) -> dict:
 
             logger.debug(f"[UC] Temp Clause: {tc}")
 
-            ineq_clauses.append(tc)
-            logger.debug(f"Ineq Clauses: {ineq_clauses}")
+            if clause_verbosity > 1:
+                ineq_clauses.append(tc)
+                logger.debug(f"Ineq Clauses: {ineq_clauses}")
+
+            final_clauses.append(tc)
+            total_num_literals += len(tc)
 
     for r in range (1, num_sc+1):
         temp_row_r = literal_mappings_sc[r]
@@ -311,9 +343,14 @@ def rgp_to_sat_er(rgp_obj: dict) -> dict:
 
             logger.debug(f"[SC] Temp Clause: {tc}")
 
-            ineq_clauses.append(tc)
-            logger.debug(f"Ineq Clauses: {ineq_clauses}")
+            if clause_verbosity > 1:
+                ineq_clauses.append(tc)
+                logger.debug(f"Ineq Clauses: {ineq_clauses}")
 
+            final_clauses.append(tc)
+            total_num_literals += len(tc)
+
+    if clause_verbosity > 1:
         logger.debug(f"Ineq Clauses: {ineq_clauses}")
         clauses["ineq_clauses"] = ineq_clauses
 
@@ -354,8 +391,12 @@ def rgp_to_sat_er(rgp_obj: dict) -> dict:
                 tc.append(-xqp)
                 logger.debug(f"[UC] Temp Clause: {tc}")
 
-                equiv_clauses.append(tc)
-                logger.debug(f"Equiv Clauses: {equiv_clauses}")
+                if clause_verbosity > 1:
+                    equiv_clauses.append(tc)
+                    logger.debug(f"Equiv Clauses: {equiv_clauses}")
+
+                final_clauses.append(tc)
+                total_num_literals += len(tc)
 
     for r in range (1, num_sc+1):
         temp_row_r = literal_mappings_sc[r]
@@ -390,11 +431,16 @@ def rgp_to_sat_er(rgp_obj: dict) -> dict:
                 tc.append(-xqp)
                 logger.debug(f"[SC] Temp Clause: {tc}")
 
-                equiv_clauses.append(tc)
-                logger.debug(f"Equiv Clauses: {equiv_clauses}")
+                if clause_verbosity > 1:
+                    equiv_clauses.append(tc)
+                    logger.debug(f"Equiv Clauses: {equiv_clauses}")
 
-    logger.debug(f"Equiv Clauses: {equiv_clauses}")
-    clauses["equiv_clauses"] = equiv_clauses
+                final_clauses.append(tc)
+                total_num_literals += len(tc)
+
+    if clause_verbosity > 1:
+        logger.debug(f"Equiv Clauses: {equiv_clauses}")
+        clauses["equiv_clauses"] = equiv_clauses
 
     # Encode UC clause (5) [ATMOST]
     logger.debug("********************CLAUSE(5)********************")
@@ -446,10 +492,15 @@ def rgp_to_sat_er(rgp_obj: dict) -> dict:
         # logger.debug(cl)
         for c in cl:
             # logger.debug(c)
-            atmost_card_clauses.append(c)
+            if clause_verbosity > 1:
+                atmost_card_clauses.append(c)
 
-    logger.debug(f"[UC] Final Atmost Clauses: {atmost_card_clauses}")
-    clauses["atmost_clauses"] = atmost_card_clauses
+            final_clauses.append(c)
+            total_num_literals += len(c)
+
+    if clause_verbosity > 1:
+        logger.debug(f"[UC] Final Atmost Clauses: {atmost_card_clauses}")
+        clauses["atmost_clauses"] = atmost_card_clauses
 
     # Encode UC and SC clause (6)
     logger.debug("********************CLAUSE(6)********************")
@@ -508,13 +559,31 @@ def rgp_to_sat_er(rgp_obj: dict) -> dict:
         # logger.debug(cl)
         for c in cl:
             # logger.debug(c)
-            atleast_card_clauses.append(c)
+            if clause_verbosity > 1:
+                atleast_card_clauses.append(c)
 
-    logger.debug(f"[SC] Final Atleast Clauses: {atleast_card_clauses}")
-    clauses["atleast_clauses"] = atleast_card_clauses
+            final_clauses.append(c)
+            total_num_literals += len(c)
+
+    if clause_verbosity > 1:
+        logger.debug(f"[SC] Final Atleast Clauses: {atleast_card_clauses}")
+        clauses["atleast_clauses"] = atleast_card_clauses
+
+    instance_data = {
+        "num_clauses": len(final_clauses),
+        "num_variables": lit_cnt,
+        "num_literals": total_num_literals
+    }
+
+    logger.debug(f"Instance Data: {instance_data}")
+    sat_obj["instance_data"] = instance_data
 
     sat_obj["literals"] = literals
-    sat_obj["clauses"] = clauses
+
+    if clause_verbosity > 1:
+        sat_obj["clauses"] = clauses
+
+    sat_obj["final_clauses"] = final_clauses
     sat_obj["final_lit_cnt"] = lit_cnt
 
     return sat_obj
@@ -537,6 +606,8 @@ if __name__ == "__main__":
 
     logger.info(f"SAT Objects: {sat_instances}")
 
-    clauses,instance_data = extract_clauses_and_instance_data(sat_obj)
+    clauses = sat_obj["final_clauses"]
+    instance_data = sat_obj["instance_data"]
+
     logger.info(f"Clauses: {clauses}")
     logger.info(f"Instance Data: {instance_data}")
