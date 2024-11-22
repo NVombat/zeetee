@@ -2,10 +2,10 @@ import sys
 from pysat.solvers import Solver
 
 from . import *
+from .helper import json_to_rgp
 from .logger import create_logger
 from .er_encoder import rgp_to_sat_er
 from .mb_encoder import rgp_to_sat_mb
-from .helper import json_to_rgp, extract_clauses_and_instance_data
 
 logger = create_logger(l_name="zt_solver")
 
@@ -46,7 +46,9 @@ def solve(enc_type: int, solver_flag: int, rgp_instance: dict) -> dict:
         sat_obj = rgp_to_sat_er(rgp_instance)
         logger.debug(f"SAT Object [ER-ENCODER]: {sat_obj}")
 
-    clauses,instance_data = extract_clauses_and_instance_data(sat_obj)
+    clauses = sat_obj["final_clauses"]
+    instance_data = sat_obj["instance_data"]
+
     logger.debug(f"Clauses: {clauses}")
     logger.debug(f"Instance Data: {instance_data}")
 
