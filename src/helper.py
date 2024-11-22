@@ -80,65 +80,6 @@ def rgp_dict_to_rgp(rgp_dict: dict) -> list:
     return rgp_instances
 
 
-def extract_clauses_and_instance_data(sat_obj: dict) -> tuple:
-    '''
-    Take a SAT object and extract its clauses to be used
-    by the SAT Solver. Also extract instance data
-
-    Data Extracted:
-        1. Total Number of Variable (x1, x2, ..., xn)
-        2. Total Number of Literals (x1, -x1, x2, -x2, ..., xn, -xn) [Total Length of Clauses]
-        3. Total Number of Clauses
-
-    Args:
-        sat_obj: SAT dictionary object
-
-    Returns:
-        tuple: A tuple containing clauses and instance data from the SAT Object
-    '''
-    logger.debug("Extracting Clauses from SAT Object...")
-
-    instance_data = {
-        "num_clauses": 0,
-        "num_variables": sat_obj['final_lit_cnt'],
-        "num_literals": 0
-    }
-
-    final_clauses = []
-
-    clauses = sat_obj["clauses"]
-    clauses_keys = list(clauses.keys())
-
-    clause_cnt = 0
-    final_lit_cnt = 0
-
-    for key in clauses_keys:
-        logger.debug(f"Clause Key: {key}")
-
-        clause = clauses[key]
-        logger.debug(f"{key}: {clause}")
-
-        clause_cnt = clause_cnt + len(clause)
-
-        for cl in clause:
-            final_clauses.append(cl)
-            final_lit_cnt = final_lit_cnt + len(cl)
-
-    logger.debug(f"Sum of Clauses: {clause_cnt}")
-    logger.debug(f"Length of Final Clauses: {len(final_clauses)}")
-    assert clause_cnt==len(final_clauses), logger.error("Issue Extracting Correct Number of Clauses")
-
-    logger.debug(f"SAT Object Clauses: {final_clauses}")
-    instance_data["num_clauses"] = clause_cnt
-
-    logger.debug(f"Number Of Variables: {sat_obj['final_lit_cnt']}")
-
-    logger.debug(f"Final Literal Count: {final_lit_cnt}")
-    instance_data["num_literals"] = final_lit_cnt
-
-    return (final_clauses,instance_data)
-
-
 def get_key_by_value(dictionary, target_value):
     '''
     Takes a dictionary and target value as input and
