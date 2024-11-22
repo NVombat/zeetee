@@ -3,12 +3,12 @@ from pysat.card import CardEnc, EncType, NoSuchEncodingError
 
 from . import *
 from .logger import create_logger
-from .helper import get_key_by_value, json_to_rgp, extract_clauses_and_instance_data
+from .helper import get_key_by_value, json_to_rgp
 
 logger = create_logger(l_name="zt_mb_encoder")
 
 
-def rgp_to_sat_mb(rgp_obj: dict) -> dict:
+def rgp_to_sat_mb(rgp_obj: dict, clause_verbosity: int = 1) -> dict:
     '''
     Takes an RGP dictionary object and returns a SAT
     dictionary object w.r.t the first encoding which
@@ -16,10 +16,15 @@ def rgp_to_sat_mb(rgp_obj: dict) -> dict:
 
     Args:
         rgp_obj: RGP dictionary object
+        clause_verbosity: Flag to decide amount of detail in SAT Object for Clauses [1: Low, 2: High]
 
     Returns:
         dict: SAT dictionary object
     '''
+    if not isinstance(clause_verbosity, int) or clause_verbosity not in range(1, 3):
+        logger.error("Clause Verbosity Needs To Be An Integer = [1,2]! Please Provide a Valid Input")
+        sys.exit(1)
+
     sat_obj = {}
 
     literal_mappings = {} # only for resources (xiu)
@@ -28,6 +33,10 @@ def rgp_to_sat_mb(rgp_obj: dict) -> dict:
 
     literals = []
     clauses = {}
+
+    # To gather instance data
+    final_clauses = []
+    total_num_literals = 0
 
     n = rgp_obj["n"]
     logger.debug(f"Number of Resources: {n}")
@@ -195,7 +204,12 @@ def rgp_to_sat_mb(rgp_obj: dict) -> dict:
             tc.append(xiu)
 
         logger.debug(f"TC: {tc}")
-        clause_1.append(tc)
+
+        if clause_verbosity > 1:
+            clause_1.append(tc)
+
+        final_clauses.append(tc)
+        total_num_literals += len(tc)
 
         # A resource must in at most 1 group
         # totalizer = ITotalizer(lits=tc, ubound=1, top_id=lit_cnt)
@@ -207,19 +221,25 @@ def rgp_to_sat_mb(rgp_obj: dict) -> dict:
 
         for clause in cnf_atmost_clauses:
             # Remove one layer of lists
-            clause_2.append(clause)
+            if clause_verbosity > 1:
+                clause_2.append(clause)
 
-        logger.debug(f"Clause 2 Temp: {clause_2}")
+            final_clauses.append(clause)
+            total_num_literals += len(clause)
+
+        if clause_verbosity > 1:
+            logger.debug(f"Clause 2 Temp: {clause_2}")
 
         # Updating literal count
         lit_cnt = cnf_atmost.nv
         logger.debug(f"Updated Literal Count: {lit_cnt}")
 
-    logger.debug(f"Clause 1: {clause_1}")
-    clauses["clause_1"] = clause_1
+    if clause_verbosity > 1:
+        logger.debug(f"Clause 1: {clause_1}")
+        clauses["clause_1"] = clause_1
 
-    logger.debug(f"Clause 2: {clause_2}")
-    clauses["clause_2"] = clause_2
+        logger.debug(f"Clause 2: {clause_2}")
+        clauses["clause_2"] = clause_2
 
     logger.debug("********************CLAUSE(3)********************")
     clause_3 = [] # ¬xirp,u ∨ yr,u
@@ -255,7 +275,11 @@ def rgp_to_sat_mb(rgp_obj: dict) -> dict:
 
                 logger.debug(f"[UC] TC: {tc}")
 
-                clause_3.append(tc)
+                if clause_verbosity > 1:
+                    clause_3.append(tc)
+
+                final_clauses.append(tc)
+                total_num_literals += len(tc)
 
     for r in range (1, num_sc+1):
         temp_row_r = literal_mappings_sc[r]
@@ -288,10 +312,15 @@ def rgp_to_sat_mb(rgp_obj: dict) -> dict:
 
                 logger.debug(f"[SC] TC: {tc}")
 
-                clause_3.append(tc)
+                if clause_verbosity > 1:
+                    clause_3.append(tc)
 
-    logger.debug(f"Clause 3: {clause_3}")
-    clauses["clause_3"] = clause_3
+                final_clauses.append(tc)
+                total_num_literals += len(tc)
+
+    if clause_verbosity > 1:
+        logger.debug(f"Clause 3: {clause_3}")
+        clauses["clause_3"] = clause_3
 
     logger.debug("********************CLAUSE(4)********************")
     clause_4 = []
@@ -326,7 +355,12 @@ def rgp_to_sat_mb(rgp_obj: dict) -> dict:
                 tc.append(xpu)
 
             logger.debug(f"[UC] TC: {tc}")
-            clause_4.append(tc)
+
+            if clause_verbosity > 1:
+                clause_4.append(tc)
+
+            final_clauses.append(tc)
+            total_num_literals += len(tc)
 
     for r in range (1, num_sc+1):
         temp_row_r = literal_mappings_sc[r]
@@ -358,10 +392,16 @@ def rgp_to_sat_mb(rgp_obj: dict) -> dict:
                 tc.append(xpu)
 
             logger.debug(f"[SC] TC: {tc}")
-            clause_4.append(tc)
 
-    logger.debug(f"Clause 4: {clause_4}")
-    clauses["clause_4"] = clause_4
+            if clause_verbosity > 1:
+                clause_4.append(tc)
+
+            final_clauses.append(tc)
+            total_num_literals += len(tc)
+
+    if clause_verbosity > 1:
+        logger.debug(f"Clause 4: {clause_4}")
+        clauses["clause_4"] = clause_4
 
     logger.debug("********************CLAUSE(5)********************")
     '''
@@ -432,10 +472,15 @@ def rgp_to_sat_mb(rgp_obj: dict) -> dict:
         # logger.debug(cl)
         for c in cl:
             # logger.debug(c)
-            atmost_card_clauses.append(c)
+            if clause_verbosity > 1:
+                atmost_card_clauses.append(c)
 
-    logger.debug(f"[UC] Final Atmost Clauses: {atmost_card_clauses}")
-    clauses["atmost_clauses"] = atmost_card_clauses
+            final_clauses.append(c)
+            total_num_literals += len(c)
+
+    if clause_verbosity > 1:
+        logger.debug(f"[UC] Final Atmost Clauses: {atmost_card_clauses}")
+        clauses["atmost_clauses"] = atmost_card_clauses
 
     logger.debug("********************CLAUSE(6)********************")
     '''
@@ -499,10 +544,15 @@ def rgp_to_sat_mb(rgp_obj: dict) -> dict:
         # logger.debug(cl)
         for c in cl:
             # logger.debug(c)
-            atleast_card_clauses.append(c)
+            if clause_verbosity > 1:
+                atleast_card_clauses.append(c)
 
-    logger.debug(f"[SC] Final Atleast Clauses: {atleast_card_clauses}")
-    clauses["atleast_clauses"] = atleast_card_clauses
+            final_clauses.append(c)
+            total_num_literals += len(c)
+
+    if clause_verbosity > 1:
+        logger.debug(f"[SC] Final Atleast Clauses: {atleast_card_clauses}")
+        clauses["atleast_clauses"] = atleast_card_clauses
 
     logger.debug("**********Additional Boolean Variables (Z Literals)**********")
     z_lits = []
@@ -545,10 +595,15 @@ def rgp_to_sat_mb(rgp_obj: dict) -> dict:
 
             logger.debug(f"TC: {tc}")
 
-            clause_7.append(tc)
+            if clause_verbosity > 1:
+                clause_7.append(tc)
 
-    logger.debug(f"Clause 7: {clause_7}")
-    clauses["clause_7"] = clause_7
+            final_clauses.append(tc)
+            total_num_literals += len(tc)
+
+    if clause_verbosity > 1:
+        logger.debug(f"Clause 7: {clause_7}")
+        clauses["clause_7"] = clause_7
 
     logger.debug("********************CLAUSE(8)********************")
     clause_8 = []
@@ -570,10 +625,16 @@ def rgp_to_sat_mb(rgp_obj: dict) -> dict:
             tc.append(xiu)
 
         logger.debug(f"TC: {tc}")
-        clause_8.append(tc)
 
-    logger.debug(f"Clause 8: {clause_8}")
-    clauses["clause_8"] = clause_8
+        if clause_verbosity > 1:
+            clause_8.append(tc)
+
+        final_clauses.append(tc)
+        total_num_literals += len(tc)
+
+    if clause_verbosity > 1:
+        logger.debug(f"Clause 8: {clause_8}")
+        clauses["clause_8"] = clause_8
 
     logger.debug("********************CLAUSE(9)********************")
     clause_9 = []
@@ -591,10 +652,16 @@ def rgp_to_sat_mb(rgp_obj: dict) -> dict:
         tc.append(-zu_1)
 
         logger.debug(f"TC: {tc}")
-        clause_9.append(tc)
 
-    logger.debug(f"Clause 9: {clause_9}")
-    clauses["clause_9"] = clause_9
+        if clause_verbosity > 1:
+            clause_9.append(tc)
+
+        final_clauses.append(tc)
+        total_num_literals += len(tc)
+
+    if clause_verbosity > 1:
+        logger.debug(f"Clause 9: {clause_9}")
+        clauses["clause_9"] = clause_9
 
     logger.debug("**********Additional Boolean Variables (W Literals)**********")
     w_lits = []
@@ -649,10 +716,16 @@ def rgp_to_sat_mb(rgp_obj: dict) -> dict:
                 # tc.append([-wju, -xiu])
 
                 logger.debug(f"TC: {tc}")
-                clause_10.append(tc)
 
-    logger.debug(f"Clause 10: {clause_10}")
-    clauses["clause_10"] = clause_10
+                if clause_verbosity > 1:
+                    clause_10.append(tc)
+
+                final_clauses.append(tc)
+                total_num_literals += len(tc)
+
+    if clause_verbosity > 1:
+        logger.debug(f"Clause 10: {clause_10}")
+        clauses["clause_10"] = clause_10
 
     logger.debug("********************CLAUSE(11)********************")
     clause_11 = []
@@ -677,10 +750,16 @@ def rgp_to_sat_mb(rgp_obj: dict) -> dict:
             tc.append(xiu)
 
             logger.debug(f"TC: {tc}")
-            clause_11.append(tc)
 
-    logger.debug(f"Clause 11: {clause_11}")
-    clauses["clause_11"] = clause_11
+            if clause_verbosity > 1:
+                clause_11.append(tc)
+
+            final_clauses.append(tc)
+            total_num_literals += len(tc)
+
+    if clause_verbosity > 1:
+        logger.debug(f"Clause 11: {clause_11}")
+        clauses["clause_11"] = clause_11
 
     logger.debug("********************CLAUSE(12)********************")
     clause_12 = []
@@ -702,10 +781,16 @@ def rgp_to_sat_mb(rgp_obj: dict) -> dict:
             tc.append(wiu)
 
         logger.debug(f"TC: {tc}")
-        clause_12.append(tc)
 
-    logger.debug(f"Clause 12: {clause_12}")
-    clauses["clause_12"] = clause_12
+        if clause_verbosity > 1:
+            clause_12.append(tc)
+
+        final_clauses.append(tc)
+        total_num_literals += len(tc)
+
+    if clause_verbosity > 1:
+        logger.debug(f"Clause 12: {clause_12}")
+        clauses["clause_12"] = clause_12
 
     logger.debug("********************CLAUSE(13)********************")
     clause_13 = []
@@ -731,13 +816,31 @@ def rgp_to_sat_mb(rgp_obj: dict) -> dict:
                     tc.append(-wiu)
                     tc.append(-wjv)
 
-                    clause_13.append(tc)
+                    if clause_verbosity > 1:
+                        clause_13.append(tc)
 
-    logger.debug(f"Clause 13: {clause_13}")
-    clauses["clause_13"] = clause_13
+                    final_clauses.append(tc)
+                    total_num_literals += len(tc)
+
+    if clause_verbosity > 1:
+        logger.debug(f"Clause 13: {clause_13}")
+        clauses["clause_13"] = clause_13
+
+    instance_data = {
+        "num_clauses": len(final_clauses),
+        "num_variables": lit_cnt,
+        "num_literals": total_num_literals
+    }
+
+    logger.debug(f"Instance Data: {instance_data}")
+    sat_obj["instance_data"] = instance_data
 
     sat_obj["literals"] = literals
-    sat_obj["clauses"] = clauses
+
+    if clause_verbosity > 1:
+        sat_obj["clauses"] = clauses
+
+    sat_obj["final_clauses"] = final_clauses
     sat_obj["final_lit_cnt"] = lit_cnt
 
     return sat_obj
@@ -760,6 +863,8 @@ if __name__ == "__main__":
 
     logger.info(f"SAT Objects: {sat_instances}")
 
-    clauses,instance_data = extract_clauses_and_instance_data(sat_obj)
+    clauses = sat_obj["final_clauses"]
+    instance_data = sat_obj["instance_data"]
+
     logger.info(f"Clauses: {clauses}")
     logger.info(f"Instance Data: {instance_data}")
