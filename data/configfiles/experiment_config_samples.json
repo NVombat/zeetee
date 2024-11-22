@@ -1,0 +1,65 @@
+{
+    "TMO1": {
+        "num_instances": 10,
+        "num_resources": [100, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 5000],
+        "constraint_percentages": [25, 50, 75, 100, 200],
+        "constraint_size": [5, 10, 20, 25, 50],
+        "timeout": 360000
+    },
+
+    "TMO2": {
+        "num_instances": 10,
+        "num_resources": [100, 500, 1000, 1500, 2000, 2500],
+        "constraint_percentages": [25, 50, 75, 100, 200],
+        "constraint_size": [5, 10, 15, 20, 25],
+        "timeout": 360000
+    },
+
+    "TMO3": {
+        "num_instances": 10,
+        "num_resources": [100, 250, 400, 500, 650, 800, 900, 1000],
+        "constraint_percentages": [25, 50, 75, 100],
+        "constraint_size": [5, 10, 15, 20],
+        "timeout": 360000
+    },
+
+    "TM04": {
+        "num_instances": 10,
+        "num_resources": [100, 200, 300, 400, 500],
+        "constraint_percentages": [25, 50, 75, 100],
+        "constraint_size": [5, 10, 15, 20],
+        "timeout": 360000
+    },
+
+    "TST1": {
+        "num_instances": 5,
+        "num_resources": [5, 10],
+        "constraint_percentages": [200, 400],
+        "constraint_size": [3],
+        "timeout": 25
+    },
+
+    "TST2": {
+        "num_instances": 5,
+        "num_resources": [10, 20, 30, 40, 50],
+        "cst_percentage": [50, 100, 150, 200],
+        "constraint_size": [3, 4, 5, 6],
+        "timeout": 180000
+    },
+
+    "TST3": {
+        "num_instances": 5,
+        "num_resources": [50, 75, 100, 150, 200],
+        "cst_percentage": [50, 75, 100, 200],
+        "constraint_size": [4, 6, 8, 10],
+        "timeout": 180000
+    },
+
+    "TST4": {
+        "num_instances": 5,
+        "num_resources": [5, 75, 100],
+        "cst_percentage": [100],
+        "constraint_size": [3],
+        "timeout": 25
+    }
+}
