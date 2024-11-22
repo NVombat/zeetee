@@ -8,6 +8,7 @@ import logging
 import numpy as np
 import pandas as pd
 import multiprocessing
+from pysat.formula import CNF
 import matplotlib.pyplot as plt
 from pysat.solvers import Solver
 
@@ -520,17 +521,30 @@ def solve(enc_type: int, solver_flag: int, rgp_instance: dict, timeout: int) -> 
         sat_obj = rgp_to_sat_er(rgp_instance)
         logger.debug(f"SAT Object [ER-ENCODER]: {sat_obj}")
 
+    cnf = sat_obj["cnf_object"]
+
     clauses = sat_obj["final_clauses"]
     instance_data = sat_obj["instance_data"]
 
     logger.debug(f"Clauses: {clauses}")
     logger.debug(f"Instance Data: {instance_data}")
 
-    return solve_with_timeout(solver_flag=solver_flag, clauses=clauses, instance_data=instance_data, timeout=timeout)
+    return solve_with_timeout(solver_flag=solver_flag, cnf=cnf, instance_data=instance_data, timeout=timeout)
 
 
-def solve_with_timeout(solver_flag: int, clauses: list, instance_data: dict, timeout: int) -> dict:
+def solve_with_timeout(solver_flag: int, cnf: CNF, instance_data: dict, timeout: int) -> dict:
     '''
+    Solve an RGP instance, using the generated CNF
+    object, within a specific Timeout Limit
+
+    Args:
+        solver_flag: [1(Cadical195), 2(MapleChrono)]
+        cnf: CNF Object
+        instance_data: Dictionary containing Instance Data
+        timeout: Timeout Limit for Solver [in MilliSeconds]
+
+    Returns:
+        dict: Result of the SAT Solver
     '''
     logger.debug(f"Solving Instance...")
 
@@ -545,7 +559,7 @@ def solve_with_timeout(solver_flag: int, clauses: list, instance_data: dict, tim
         solver_name = solvers[1]
 
     logger.debug(f"Solver: {solver_name}")
-    solver = Solver(name=solver_name, bootstrap_with=clauses, use_timer=True, with_proof=True)
+    solver = Solver(name=solver_name, bootstrap_with=cnf, use_timer=True, with_proof=True)
 
     # Register the signal function handler
     signal.signal(signal.SIGALRM, handle_timeout)
