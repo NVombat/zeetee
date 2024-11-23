@@ -634,6 +634,8 @@ def solve_with_timeout(enc_type: str, solver_flag: int, cnf: CNF, instance_data:
         "instance_data": instance_data
     })
 
+    logger.info(f"[{enc_type.capitalize()}] Instance Solved...")
+
     return res
 
     # solver_results = call_solver_with_timeout(solver_obj=solver, timeout=timeout/1000)
