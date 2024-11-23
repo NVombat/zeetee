@@ -348,7 +348,8 @@ def run_encoding_1(rgp_instances: list, experiment_config_path: str, job_id: int
         rgp_instances=rgp_instances,
         encoding_type=encoding_type,
         timeout_limit=timeout_limit,
-        job_id=job_id
+        job_id=job_id,
+        use_cnf = False
     )
 
 
@@ -374,11 +375,12 @@ def run_encoding_2(rgp_instances: list, experiment_config_path: str, job_id: int
         rgp_instances=rgp_instances,
         encoding_type=encoding_type,
         timeout_limit=timeout_limit,
-        job_id=job_id
+        job_id=job_id,
+        use_cnf=False
     )
 
 
-def solve_and_record_results(rgp_instances: list, encoding_type: str, timeout_limit: int, job_id: int) -> dict:
+def solve_and_record_results(rgp_instances: list, encoding_type: str, timeout_limit: int, job_id: int, use_cnf : bool) -> dict:
     '''
     Solves all RGP instances of a specific encoding
     and returns the results in a dictionary
@@ -388,6 +390,7 @@ def solve_and_record_results(rgp_instances: list, encoding_type: str, timeout_li
         encoding_type: Encoding Type
         timeout_limit: Timeout Limit for Solver [in MilliSeconds]
         job_id: SLURM Job ID (Unique Identifier)
+        use_cnf: Flag to decide whether to use CNF object or final_clauses
 
     Returns:
         dict: A dictionary containing the experiment results
@@ -438,7 +441,7 @@ def solve_and_record_results(rgp_instances: list, encoding_type: str, timeout_li
         # Storing N value in Data Frame for Plotting Instance Data Statistics
         temp_data["N"] = inst["n"]
 
-        res = solve(encoding, slv_flag, inst, timeout_limit)
+        res = solve(encoding, slv_flag, inst, timeout_limit, use_cnf)
 
         logger.info(f"[{encoding_type.capitalize()}] Instance {track_id} Results Received From Solver!")
 
@@ -487,7 +490,7 @@ def solve_and_record_results(rgp_instances: list, encoding_type: str, timeout_li
     return experiment_results
 
 
-def solve(enc_type: int, solver_flag: int, rgp_instance: dict, timeout: int) -> dict:
+def solve(enc_type: int, solver_flag: int, rgp_instance: dict, timeout: int, use_cnf: bool) -> dict:
     '''
     Takes an encoding type and solver type passed along
     with an RGP instance. It converts the input to a
@@ -499,6 +502,7 @@ def solve(enc_type: int, solver_flag: int, rgp_instance: dict, timeout: int) -> 
         solver_flag: [1(Cadical195), 2(MapleChrono)]
         rgp_instance: RGP Instance
         timeout: Timeout Limit for Solver [in MilliSeconds]
+        use_cnf: Flag to decide whether to use CNF object or final_clauses
 
     Returns:
         dict: Result of the SAT Solver
@@ -527,18 +531,34 @@ def solve(enc_type: int, solver_flag: int, rgp_instance: dict, timeout: int) -> 
 
     logger.info(f"[E{enc_type}] Instance Converted To SAT Object Successfully...")
 
-    cnf = sat_obj["cnf_object"]
+    if use_cnf:
+        logger.info(f"[E{enc_type}] Using CNF Object")
+        clauses = sat_obj["cnf_object"]
+        logger.info(f"[E{enc_type}] CNF Size: {len(clauses.clauses)} clauses")
 
-    clauses = sat_obj["final_clauses"]
+    else:
+        logger.info(f"[E{enc_type}] Using Final_Clauses")
+        clauses = sat_obj["final_clauses"]
+        logger.debug(f"Clauses: {clauses}")
+
     instance_data = sat_obj["instance_data"]
-
-    logger.debug(f"Clauses: {clauses}")
     logger.debug(f"Instance Data: {instance_data}")
 
-    return solve_with_timeout(enc_type=enc_type, solver_flag=solver_flag, cnf=cnf, instance_data=instance_data, timeout=timeout)
+    return solve_with_timeout(
+        enc_type=enc_type,
+        solver_flag=solver_flag,
+        clauses=clauses,
+        instance_data=instance_data,
+        timeout=timeout)
 
 
-def solve_with_timeout(enc_type: str, solver_flag: int, cnf: CNF, instance_data: dict, timeout: int) -> dict:
+def solve_with_timeout(
+    enc_type: str,
+    solver_flag: int,
+    clauses: list | CNF,
+    instance_data: dict,
+    timeout: int,
+) -> dict:
     '''
     Solve an RGP instance, using the generated CNF
     object, within a specific Timeout Limit
@@ -546,7 +566,7 @@ def solve_with_timeout(enc_type: str, solver_flag: int, cnf: CNF, instance_data:
     Args:
         enc_type: [1(Encoding 1 [MB]), 2(Encoding 2 [ER])]
         solver_flag: [1(Cadical195), 2(MapleChrono)]
-        cnf: CNF Object
+        clauses: Clauses in the form of a list of cnf object
         instance_data: Dictionary containing Instance Data
         timeout: Timeout Limit for Solver [in MilliSeconds]
 
@@ -566,7 +586,9 @@ def solve_with_timeout(enc_type: str, solver_flag: int, cnf: CNF, instance_data:
         solver_name = solvers[1]
 
     logger.debug(f"Solver: {solver_name}")
-    solver = Solver(name=solver_name, bootstrap_with=cnf, use_timer=True, with_proof=True)
+    solver = Solver(name=solver_name, bootstrap_with=clauses, use_timer=True, with_proof=True)
+
+    logger.info(f"[E{enc_type}] Setting Timeout")
 
     # Register the signal function handler
     signal.signal(signal.SIGALRM, handle_timeout)
@@ -578,6 +600,8 @@ def solve_with_timeout(enc_type: str, solver_flag: int, cnf: CNF, instance_data:
     res = {}
 
     try:
+        logger.info(f"[E{enc_type}] Calling Solver...")
+
         start_time = time.time()
         satisfiable = solver.solve()
         end_time = time.time()
@@ -614,11 +638,11 @@ def solve_with_timeout(enc_type: str, solver_flag: int, cnf: CNF, instance_data:
         logger.debug(f"Accumulated Low Level Stats: {solver.accum_stats() or 'No stats available.'}")
 
     except TimeoutError:
+        logger.error("Solver Timed Out!")
         satisfiable = None
         timeout_flag = True
         result = None
         tts = timeout/1000
-        logger.debug("Solver Timed Out!")
 
     finally:
         # Reset the alarm (cancel the timeout)
