@@ -515,7 +515,7 @@ def solve(enc_type: int, solver_flag: int, rgp_instance: dict, timeout: int) -> 
 
     logger.debug(f"Encoding Type is set to {enc_type}... Solver is set to {solver_flag}...")
 
-    logger.info("Converting Instance...")
+    logger.info(f"[{enc_type.capitalize()}] Converting Instance...")
 
     if enc_type == 1:
         sat_obj = rgp_to_sat_mb(rgp_instance)
@@ -525,7 +525,7 @@ def solve(enc_type: int, solver_flag: int, rgp_instance: dict, timeout: int) -> 
         sat_obj = rgp_to_sat_er(rgp_instance)
         logger.debug(f"SAT Object [ER-ENCODER]: {sat_obj}")
 
-    logger.info("Instance Converted To SAT Object Successfully...")
+    logger.info(f"[{enc_type.capitalize()}] Instance Converted To SAT Object Successfully...")
 
     cnf = sat_obj["cnf_object"]
 
@@ -535,15 +535,16 @@ def solve(enc_type: int, solver_flag: int, rgp_instance: dict, timeout: int) -> 
     logger.debug(f"Clauses: {clauses}")
     logger.debug(f"Instance Data: {instance_data}")
 
-    return solve_with_timeout(solver_flag=solver_flag, cnf=cnf, instance_data=instance_data, timeout=timeout)
+    return solve_with_timeout(enc_type=enc_type, solver_flag=solver_flag, cnf=cnf, instance_data=instance_data, timeout=timeout)
 
 
-def solve_with_timeout(solver_flag: int, cnf: CNF, instance_data: dict, timeout: int) -> dict:
+def solve_with_timeout(enc_type: str, solver_flag: int, cnf: CNF, instance_data: dict, timeout: int) -> dict:
     '''
     Solve an RGP instance, using the generated CNF
     object, within a specific Timeout Limit
 
     Args:
+        enc_type: [1(Encoding 1 [MB]), 2(Encoding 2 [ER])]
         solver_flag: [1(Cadical195), 2(MapleChrono)]
         cnf: CNF Object
         instance_data: Dictionary containing Instance Data
@@ -552,7 +553,7 @@ def solve_with_timeout(solver_flag: int, cnf: CNF, instance_data: dict, timeout:
     Returns:
         dict: Result of the SAT Solver
     '''
-    logger.info(f"Solving Instance...")
+    logger.info(f"[{enc_type.capitalize()}] Solving Instance...")
 
     solvers = ['cadical195', 'maplechrono']
 
@@ -581,7 +582,7 @@ def solve_with_timeout(solver_flag: int, cnf: CNF, instance_data: dict, timeout:
         satisfiable = solver.solve()
         end_time = time.time()
 
-        logger.info(f"Satisfiable: {satisfiable}")
+        logger.info(f"[{enc_type.capitalize()}] Satisfiable: {satisfiable}")
 
         elapsed_time_using_solver = solver.time()
         logger.debug(f"Elapsed Time (BuiltIn PySAT Method .time()): {elapsed_time_using_solver:.5f} Seconds")
@@ -776,7 +777,14 @@ def solve_and_record_results_preprocessed(sat_objects: dict, encoding_type: str,
         temp_data["num_literals"] = instance_data ["num_literals"]
 
         clauses = sat_objects[dict_index]["clauses"]
-        res = solve_with_timeout(solver_flag=slv_flag, clauses=clauses, instance_data=instance_data, timeout=timeout_limit)
+
+        res = solve_with_timeout(
+            enc_type=encoding_type,
+            solver_flag=slv_flag,
+            clauses=clauses,
+            instance_data=instance_data,
+            timeout=timeout_limit
+        )
 
         temp_data["solving_time"] = res["tts"]
 
