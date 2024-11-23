@@ -595,6 +595,12 @@ def rgp_to_sat_er(rgp_obj: dict, clause_verbosity: int = 1, save_cnf_to_file: bo
 
     cnf.extend(final_clauses)
 
+    logger.debug(f"CNF Size: {len(cnf.clauses)} clauses, {instance_data['num_literals']} literals.")
+
+    if not cnf.clauses:
+        logger.error("CNF is empty. Check encoding logic.")
+        sys.exit(1)
+
     if save_cnf_to_file:
         cnf.to_file(kwargs['output_cnf_fp'])
         logger.info(f"CNF Saved To File: {kwargs['output_cnf_fp']}")
