@@ -515,7 +515,7 @@ def solve(enc_type: int, solver_flag: int, rgp_instance: dict, timeout: int) -> 
 
     logger.debug(f"Encoding Type is set to {enc_type}... Solver is set to {solver_flag}...")
 
-    logger.info(f"[{enc_type.capitalize()}] Converting Instance...")
+    logger.info(f"[E{enc_type}] Converting Instance...")
 
     if enc_type == 1:
         sat_obj = rgp_to_sat_mb(rgp_instance)
@@ -525,7 +525,7 @@ def solve(enc_type: int, solver_flag: int, rgp_instance: dict, timeout: int) -> 
         sat_obj = rgp_to_sat_er(rgp_instance)
         logger.debug(f"SAT Object [ER-ENCODER]: {sat_obj}")
 
-    logger.info(f"[{enc_type.capitalize()}] Instance Converted To SAT Object Successfully...")
+    logger.info(f"[E{enc_type}] Instance Converted To SAT Object Successfully...")
 
     cnf = sat_obj["cnf_object"]
 
@@ -553,7 +553,7 @@ def solve_with_timeout(enc_type: str, solver_flag: int, cnf: CNF, instance_data:
     Returns:
         dict: Result of the SAT Solver
     '''
-    logger.info(f"[{enc_type.capitalize()}] Solving Instance...")
+    logger.info(f"[E{enc_type}] Solving Instance...")
 
     solvers = ['cadical195', 'maplechrono']
 
@@ -582,7 +582,7 @@ def solve_with_timeout(enc_type: str, solver_flag: int, cnf: CNF, instance_data:
         satisfiable = solver.solve()
         end_time = time.time()
 
-        logger.info(f"[{enc_type.capitalize()}] Satisfiable: {satisfiable}")
+        logger.info(f"[E{enc_type}] Satisfiable: {satisfiable}")
 
         elapsed_time_using_solver = solver.time()
         logger.debug(f"Elapsed Time (BuiltIn PySAT Method .time()): {elapsed_time_using_solver:.5f} Seconds")
@@ -634,7 +634,7 @@ def solve_with_timeout(enc_type: str, solver_flag: int, cnf: CNF, instance_data:
         "instance_data": instance_data
     })
 
-    logger.info(f"[{enc_type.capitalize()}] Instance Solved...")
+    logger.info(f"[E{enc_type}] Instance Solved...")
 
     return res
 
