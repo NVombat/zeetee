@@ -644,6 +644,9 @@ def solve_with_timeout(
         result = None
         tts = timeout/1000
 
+    except Exception as e:
+        logger.error(f"[E{enc_type}] Solver Error: {e}")
+
     finally:
         # Reset the alarm (cancel the timeout)
         # signal.signal(signal.SIGALRM, signal.SIG_IGN)
