@@ -635,7 +635,7 @@ def solve_with_timeout(
             else:
                 logger.debug("Proof could not be extracted.")
 
-        logger.debug(f"Accumulated Low Level Stats: {solver.accum_stats() or 'No stats available.'}")
+        logger.info(f"[E{enc_type}] Solver statistics: {solver.accum_stats() or 'No stats available'}")
 
     except TimeoutError:
         logger.error("Solver Timed Out!")
