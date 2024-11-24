@@ -226,13 +226,28 @@ def rgp_to_sat_mb(rgp_obj: dict, clause_verbosity: int = 1, save_cnf_to_file: bo
         final_clauses.append(tc)
         total_num_literals += len(tc)
 
-        # A resource must in at most 1 group
-        # totalizer = ITotalizer(lits=tc, ubound=1, top_id=lit_cnt)
-        # cnf_atmost = CardEnc.atmost(lits=tc, bound=1, top_id=lit_cnt, encoding=EncType.pairwise)
-        cnf_atmost = CardEnc.atmost(lits=tc, bound=1, top_id=lit_cnt, encoding=EncType.seqcounter) # default encoding
+        atmost_bound = 1
 
-        cnf_atmost_clauses = cnf_atmost.clauses
-        # logger.debug(f"Atmost Clauses: {cnf_atmost_clauses}")
+        if atmost_bound < len(tc):
+            # A resource must in at most 1 group
+            # totalizer = ITotalizer(lits=tc, ubound=1, top_id=lit_cnt)
+            # cnf_atmost = CardEnc.atmost(lits=tc, bound=1, top_id=lit_cnt, encoding=EncType.pairwise)
+            cnf_atmost = CardEnc.atmost(lits=tc, bound=atmost_bound, top_id=lit_cnt, encoding=EncType.seqcounter) # default encoding
+            logger.debug(f"CNF: {cnf_atmost}")
+
+            cnf_atmost_clauses = cnf_atmost.clauses
+            # logger.debug(f"Atmost Clauses: {cnf_atmost_clauses}")
+
+            logger.debug(f"Clauses: {cnf_atmost_clauses}")
+
+            # Updating literal count
+            if cnf_atmost_clauses.nv != 0:
+                lit_cnt = cnf_atmost.nv
+
+            logger.debug(f"UPDATED LITERAL COUNT: {lit_cnt}")
+
+        else:
+            cnf_atmost_clauses = []
 
         for clause in cnf_atmost_clauses:
             # Remove one layer of lists
@@ -244,10 +259,6 @@ def rgp_to_sat_mb(rgp_obj: dict, clause_verbosity: int = 1, save_cnf_to_file: bo
 
         if clause_verbosity > 1:
             logger.debug(f"Clause 2 Temp: {clause_2}")
-
-        # Updating literal count
-        lit_cnt = cnf_atmost.nv
-        logger.debug(f"Updated Literal Count: {lit_cnt}")
 
     if clause_verbosity > 1:
         logger.debug(f"Clause 1: {clause_1}")
@@ -849,6 +860,8 @@ def rgp_to_sat_mb(rgp_obj: dict, clause_verbosity: int = 1, save_cnf_to_file: bo
 
     logger.debug(f"Instance Data: {instance_data}")
     sat_obj["instance_data"] = instance_data
+
+    logger.info(f"Number of Final Clauses: {len(final_clauses)}")
 
     cnf.extend(final_clauses)
 
