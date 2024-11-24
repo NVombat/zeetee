@@ -241,7 +241,7 @@ def rgp_to_sat_mb(rgp_obj: dict, clause_verbosity: int = 1, save_cnf_to_file: bo
             logger.debug(f"Clauses: {cnf_atmost_clauses}")
 
             # Updating literal count
-            if cnf_atmost_clauses.nv != 0:
+            if cnf_atmost.nv != 0:
                 lit_cnt = cnf_atmost.nv
 
             logger.debug(f"UPDATED LITERAL COUNT: {lit_cnt}")
