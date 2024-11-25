@@ -544,12 +544,21 @@ def solve(enc_type: int, solver_flag: int, rgp_instance: dict, timeout: int, use
     instance_data = sat_obj["instance_data"]
     logger.debug(f"Instance Data: {instance_data}")
 
-    return solve_with_timeout(
+    # return solve_with_timeout(
+    #     enc_type=enc_type,
+    #     solver_flag=solver_flag,
+    #     clauses=clauses,
+    #     instance_data=instance_data,
+    #     timeout=timeout
+    # )
+
+    return solve_with_timeout_using_process(
         enc_type=enc_type,
         solver_flag=solver_flag,
         clauses=clauses,
         instance_data=instance_data,
-        timeout=timeout)
+        timeout=timeout
+    )
 
 
 def solve_with_timeout(
@@ -561,7 +570,8 @@ def solve_with_timeout(
 ) -> dict:
     '''
     Solve an RGP instance, using the generated CNF
-    object, within a specific Timeout Limit
+    object or a list of final clauses, within a
+    specific Timeout Limit
 
     Args:
         enc_type: [1(Encoding 1 [MB]), 2(Encoding 2 [ER])]
@@ -665,10 +675,113 @@ def solve_with_timeout(
 
     return res
 
-    # solver_results = call_solver_with_timeout(solver_obj=solver, timeout=timeout/1000)
-    # solver_results["instance_data"] = instance_data
 
-    # return solver_results
+def solve_with_timeout_using_process(
+    enc_type: str,
+    solver_flag: int,
+    clauses: list | CNF,
+    instance_data: dict,
+    timeout: int,
+) -> dict:
+    '''
+    Solve an RGP instance, using the generated CNF
+    object or a list of final clauses, within a
+    specific Timeout Limit in a new process
+
+    Args:
+        enc_type: [1(Encoding 1 [MB]), 2(Encoding 2 [ER])]
+        solver_flag: [1(Cadical195), 2(MapleChrono)]
+        clauses: Clauses in the form of a list of cnf object
+        instance_data: Dictionary containing Instance Data
+        timeout: Timeout Limit for Solver [in MilliSeconds]
+
+    Returns:
+        dict: Result of the SAT Solver
+    '''
+    logger.info(f"[E{enc_type}] Solving Instance In A Separate Process...")
+
+    def solver_process(enc_type, solver_name, clauses, return_dict):
+        '''
+        Solver logic to run in a separate process
+        '''
+        solver = Solver(name=solver_name, bootstrap_with=clauses, use_timer=True, with_proof=True)
+        timeout_flag = False
+        result = None
+
+        try:
+            logger.info(f"[E{enc_type}] Calling Solver In Process...")
+
+            start_time = time.time()
+            satisfiable = solver.solve()
+            end_time = time.time()
+
+            logger.info(f"[E{enc_type}] Satisfiable: {satisfiable}")
+
+            elapsed_time = end_time - start_time
+            logger.debug(f"[E{enc_type}] Elapsed Time: {elapsed_time:.5f} Seconds")
+
+            if satisfiable:
+                result = solver.get_model()
+            else:
+                result = solver.get_proof()
+
+            return_dict.update({
+                "status": satisfiable,
+                "tts": elapsed_time,
+                "result": result,
+                "timed_out": timeout_flag,
+            })
+
+        except Exception as e:
+            logger.error(f"[E{enc_type}] Solver Error in Process: {e}")
+
+            return_dict.update({
+                "status": None,
+                "tts": timeout / 1000,
+                "result": None,
+                "timed_out": True,
+            })
+
+        finally:
+            solver.delete()
+
+    solvers = ['cadical195', 'maplechrono']
+    solver_name = solvers[solver_flag - 1]
+
+    # Shared dictionary to store results from the process
+    manager = multiprocessing.Manager()
+    return_dict = manager.dict()
+
+    # Create the process
+    solver_proc = multiprocessing.Process(
+        target=solver_process,
+        args=(enc_type, solver_name, clauses, return_dict)
+    )
+
+    # Start the process and wait with a timeout
+    solver_proc.start()
+    solver_proc.join(timeout / 1000)
+
+    # If process exceeds timeout, terminate it
+    if solver_proc.is_alive():
+        logger.warning(f"[E{enc_type}] Solver Process Timed Out!")
+
+        solver_proc.terminate()
+        solver_proc.join()
+
+        return_dict.update({
+            "status": None,
+            "tts": timeout / 1000,
+            "result": None,
+            "timed_out": True,
+        })
+
+    res = dict(return_dict)
+    res["instance_data"] = instance_data
+
+    logger.info(f"[E{enc_type}] Instance Solved In Separate Process...")
+
+    return res
 
 
 def write_temp_data_to_csv(temp_data: dict, csv_file_path: str) -> None:
@@ -851,53 +964,6 @@ def solve_and_record_results_preprocessed(sat_objects: dict, encoding_type: str,
     write_to_file(experiment_results, results_file_path)
 
     return experiment_results
-
-
-def call_solver_with_timeout(solver_obj, timeout) -> dict:
-    '''
-    Runs the solver with a timeout. If the solving process exceeds the timeout,
-    it is terminated, and the result is set to None to indicate a timeout
-
-    Args:
-        solver_obj: The solver object that contains the SAT instance to be solved
-        timeout: Maximum time (in seconds) to allow the solver to run
-
-    Returns:
-        dict: A dictionary containing the solver results
-    '''
-    result_dict = multiprocessing.Manager().dict()
-
-    def solver_process(solver_obj, result_dict):
-        satisfiable = solver_obj.solve()
-        logger.debug(f"Satisfiable: {satisfiable}")
-
-        elapsed_time = solver_obj.time()
-        logger.debug(f"TTS [TimeToSolve]: {elapsed_time} Seconds")
-
-        result_dict["status"] = satisfiable
-        result_dict["tts"] = elapsed_time
-        result_dict["result"] = solver_obj.get_model() if satisfiable else solver_obj.get_proof()
-        result_dict["timed_out"] = False
-
-    p = multiprocessing.Process(target=solver_process, args=(solver_obj, result_dict))
-    p.start()
-
-    p.join(timeout)
-
-    if p.is_alive():
-        p.terminate()
-        p.join()
-
-        result_dict["status"] = None
-        result_dict["tts"] = timeout
-        result_dict["result"] = None
-        result_dict["timed_out"] = True
-
-        logger.debug("Solver Timed Out!")
-
-    solver_obj.delete()
-
-    return result_dict.copy()
 
 
 if __name__ == "__main__":

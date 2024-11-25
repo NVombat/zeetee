@@ -18,13 +18,13 @@ if __name__ == "__main__":
         logger.error("Usage: python arc_runner.py file_extension operation [file_extension must be a string and operation must be an integer 0, 1, 2 or 3]")
         sys.exit(1)
 
-    logger.info(f"Command Line Args: {cl_args}")
+    logger.debug(f"Command Line Args: {cl_args}")
 
     try:
         filename_extension = cl_args[1]
         operation = int(cl_args[2])
 
-        if operation not in range(0,4) or not isinstance(cl_args[1], str):
+        if operation not in range(0,4) or not isinstance(filename_extension, str):
             raise ValueError
 
     except ValueError:
