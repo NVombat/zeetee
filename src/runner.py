@@ -35,24 +35,58 @@ def handle_timeout(sig, frame):
     raise TimeoutError('Solver Timed Out!')
 
 
-def cactus_plot(times1: list, times2: list, timeout: int = 360, filename: str = "cactus_plot.svg") -> None:
+def cactus_plot(
+    times1: list = None,
+    times2: list = None,
+    use_csv: bool = False,
+    csv_file_path_e1: str = None,
+    csv_file_path_e2: str = None,
+    timeout: float = 360.0,
+    filename: str = "cactus_plot.svg"
+) -> None:
     '''
-    Plots a Cactus Plot based on two input arrays that
-    contain the individual time taken to solve each
-    instance for two different encodings.
+    Plots a Cactus Plot based on either two input
+    arrays or a CSV file containing the data.
 
     Args:
-        times1: List of all the individual execution times of instances for encoding 1
-        times2: List of all the individual execution times of instances for encoding 2
+        times1: List of all the individual execution times of instances for encoding 1 (used if use_csv=False)
+        times2: List of all the individual execution times of instances for encoding 2 (used if use_csv=False)
+        use_csv: Whether to read input from a CSV file (default: False)
+        csv_file_path_e1: Path to the CSV file containing the input data for E1 (used if use_csv=True)
+        csv_file_path_e2: Path to the CSV file containing the input data for E2 (used if use_csv=True)
         timeout: Maximum time allowed for solving an instance (default: 360 seconds)
-        filename: Name of the file where the plot will be saved (default: "cactus_plot.png")
+        filename: Name of the file where the plot will be saved (default: "cactus_plot.svg")
 
     Returns:
         None: Saves and displays a cactus plot for both encodings
     '''
+    if use_csv:
+        logger.debug("Using CSV To Plot Graph")
+
+        if not csv_file_path_e1 or not csv_file_path_e2 or not os.path.exists(csv_file_path_e1) or not os.path.exists(csv_file_path_e2):
+            logger.error("Please Provide Valid CSV File Paths: use_csv SET to TRUE")
+            sys.exit(1)
+
+        data_e1 = pd.read_csv(csv_file_path_e1)
+        data_e2 = pd.read_csv(csv_file_path_e2)
+
+        # Separate solving times for both encodings
+        times1 = data_e1['solving_time'].tolist()
+        times2 = data_e2['solving_time'].tolist()
+
+    # Ensure times1 and times2 are provided
+    if times1 is None or times2 is None:
+        logger.error("times1 & times2 must be provided if use_csv is False.")
+        sys.exit(1)
+
     # Step 1: Exclude timed-out instances (t = timeout)
-    filtered_times1 = [t for t in times1 if t < timeout]
-    filtered_times2 = [t for t in times2 if t < timeout]
+    try:
+        filtered_times1 = [t for t in times1 if float(t) < timeout]
+        filtered_times2 = [t for t in times2 if float(t) < timeout]
+
+    except Exception as e:
+        logger.error(f"Issue Removing Timed Out Instances From Consideration: {e}")
+        sys.exit(1)
 
     # Step 2: Sort the times in ascending order for both encodings
     sorted_times1 = np.sort(filtered_times1)
@@ -323,7 +357,11 @@ def get_experiment_config_and_run_experiment(
 
     if plot_results:
         image_file_name = f"cactus_plot_{job_id}.svg"
-        cactus_plot(e1_res["instance_solving_time_e1"], e2_res["instance_solving_time_e2"], image_file_name)
+        cactus_plot(
+            times1=e1_res["instance_solving_time_e1"],
+            times2=e2_res["instance_solving_time_e2"],
+            filename=image_file_name
+        )
 
     if mail_results:
         if "target_email_addr" not in kwargs:
@@ -981,6 +1019,10 @@ def solve_and_record_results_preprocessed(sat_objects: dict, encoding_type: str,
 
 if __name__ == "__main__":
     logger.info("********************RUNNER[LOCAL_TESTING]*********************")
+
+    # To use CSV file paths for Cactus Plot
+    csv_file_path_e1="/home/nvombat/Desktop/z3r0_7ru57/research/experiments/hpc/experiment3/concatenated_e1.csv"
+    csv_file_path_e2="/home/nvombat/Desktop/z3r0_7ru57/research/experiments/hpc/experiment3/concatenated_e2.csv"
 
     config_filename = "experiment_config_N10.json"
     exp_config_path = get_file_path(data_dir, config_sub_dir, config_filename)
