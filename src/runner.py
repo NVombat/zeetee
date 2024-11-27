@@ -11,6 +11,7 @@ import multiprocessing
 from pysat.formula import CNF
 import matplotlib.pyplot as plt
 from pysat.solvers import Solver
+from matplotlib.ticker import MaxNLocator
 
 from .utils import get_file_path
 from .logger import create_logger
@@ -34,7 +35,7 @@ def handle_timeout(sig, frame):
     raise TimeoutError('Solver Timed Out!')
 
 
-def cactus_plot(times1: list, times2: list, filename: str = "cactus_plot.svg") -> None:
+def cactus_plot(times1: list, times2: list, timeout: int = 360, filename: str = "cactus_plot.svg") -> None:
     '''
     Plots a Cactus Plot based on two input arrays that
     contain the individual time taken to solve each
@@ -43,22 +44,27 @@ def cactus_plot(times1: list, times2: list, filename: str = "cactus_plot.svg") -
     Args:
         times1: List of all the individual execution times of instances for encoding 1
         times2: List of all the individual execution times of instances for encoding 2
+        timeout: Maximum time allowed for solving an instance (default: 360 seconds)
         filename: Name of the file where the plot will be saved (default: "cactus_plot.png")
 
     Returns:
         None: Saves and displays a cactus plot for both encodings
     '''
-    # Step 1: Sort the times in ascending order for both encodings
-    sorted_times1 = np.sort(times1)
-    sorted_times2 = np.sort(times2)
+    # Step 1: Exclude timed-out instances (t = timeout)
+    filtered_times1 = [t for t in times1 if t < timeout]
+    filtered_times2 = [t for t in times2 if t < timeout]
 
-    # Step 2: Compute cumulative time for both encodings
+    # Step 2: Sort the times in ascending order for both encodings
+    sorted_times1 = np.sort(filtered_times1)
+    sorted_times2 = np.sort(filtered_times2)
+
+    # Step 3: Compute cumulative time for both encodings
     cumulative_times1 = np.cumsum(sorted_times1)
     cumulative_times2 = np.cumsum(sorted_times2)
 
     # Step 3: Generate the X-axis (number of solved instances) for both encodings
-    instances_solved1 = np.arange(1, len(times1) + 1)
-    instances_solved2 = np.arange(1, len(times2) + 1)
+    instances_solved1 = np.arange(1, len(filtered_times1) + 1)
+    instances_solved2 = np.arange(1, len(filtered_times2) + 1)
 
     # Step 4: Plot the cactus plot for both encodings
     plt.figure(figsize=(10, 6))
@@ -69,6 +75,11 @@ def cactus_plot(times1: list, times2: list, filename: str = "cactus_plot.svg") -
     plt.xlabel("Number of Solved Instances")
     plt.ylabel("Total Execution Time (Seconds)")
     plt.title("Cactus Plot of SAT Solver Performance")
+
+    ax = plt.gca()
+    ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+    ax.yaxis.set_major_locator(MaxNLocator(integer=True))
+
     plt.grid(True)
     plt.legend()
 
@@ -724,6 +735,8 @@ def solve_with_timeout_using_process(
                 result = solver.get_model()
             else:
                 result = solver.get_proof()
+
+            logger.info(f"[E{enc_type}] Solver statistics: {solver.accum_stats() or 'No stats available'}")
 
             return_dict.update({
                 "status": satisfiable,
