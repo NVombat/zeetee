@@ -14,9 +14,14 @@ asset_dir="$script_dir/src/assets"
 
 # Find and delete files in the log directory
 find "$log_dir" -type f -exec rm -f {} \;
+echo "Removed all Log Files from $log_dir"
 
 # Find and delete only .log files in the script_dir
 find "$slurm_log_dir" -type f -name "*.log" -exec rm -f {} \;
+echo "Removed all Log Files from $slurm_log_dir"
 
 # Find and delete files in the asset directory
 find "$asset_dir" -type f -exec rm -f {} \;
+echo "Removed all Experiment Result Files from $asset_dir"
+
+echo "Issa Cleanup Success!"
