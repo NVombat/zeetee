@@ -1024,6 +1024,9 @@ if __name__ == "__main__":
     csv_file_path_e1="/home/nvombat/Desktop/z3r0_7ru57/research/experiments/hpc/experiment3/concatenated_e1.csv"
     csv_file_path_e2="/home/nvombat/Desktop/z3r0_7ru57/research/experiments/hpc/experiment3/concatenated_e2.csv"
 
+    # Plot a cactus plot
+    # cactus_plot(use_csv=True, csv_file_path_e1=csv_file_path_e1, csv_file_path_e2=csv_file_path_e2)
+
     config_filename = "experiment_config_N10.json"
     exp_config_path = get_file_path(data_dir, config_sub_dir, config_filename)
     logger.info(f"Experiment Configuration Path: {exp_config_path}")
