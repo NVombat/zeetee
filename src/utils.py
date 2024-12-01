@@ -9,8 +9,8 @@ def get_file_path(target_dir: str, foldername: str, filename: str) -> str:
 
     Args:
         target_dir: Main Target Directory
-        filename: File Name
         foldername: Name of Folder Within the Target Directory
+        filename: File Name
 
     Returns:
         str: Path to file
@@ -33,3 +33,7 @@ def get_file_path(target_dir: str, foldername: str, filename: str) -> str:
     file_path = os.path.join(final_dir, filename)
 
     return file_path
+
+
+if __name__ == "__main__":
+    logger.info("********************UTILS[LOCAL_TESTING]*********************")
