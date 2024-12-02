@@ -1,0 +1,81 @@
+{
+    "N100": {
+        "num_instances": 6,
+        "num_resources": [100],
+        "constraint_percentages": [20, 40, 60, 80],
+        "constraint_size": [10, 15, 20],
+        "timeout": 360000
+    },
+
+    "N200": {
+        "num_instances": 6,
+        "num_resources": [200],
+        "constraint_percentages": [20, 40, 60, 80],
+        "constraint_size": [10, 15, 20],
+        "timeout": 360000
+    },
+
+    "N300": {
+        "num_instances": 6,
+        "num_resources": [300],
+        "constraint_percentages": [20, 40, 60, 80],
+        "constraint_size": [10, 15, 20],
+        "timeout": 360000
+    },
+
+    "N400": {
+        "num_instances": 6,
+        "num_resources": [400],
+        "constraint_percentages": [20, 40, 60, 80],
+        "constraint_size": [10, 15, 20],
+        "timeout": 360000
+    },
+
+    "N500": {
+        "num_instances": 6,
+        "num_resources": [500],
+        "constraint_percentages": [20, 40, 60, 80],
+        "constraint_size": [10, 15, 20],
+        "timeout": 360000
+    },
+
+    "N600": {
+        "num_instances": 6,
+        "num_resources": [600],
+        "constraint_percentages": [20, 40, 60, 80],
+        "constraint_size": [10, 15, 20],
+        "timeout": 360000
+    },
+
+    "N700": {
+        "num_instances": 6,
+        "num_resources": [700],
+        "constraint_percentages": [20, 40, 60, 80],
+        "constraint_size": [10, 15, 20],
+        "timeout": 360000
+    },
+
+    "N800": {
+        "num_instances": 6,
+        "num_resources": [800],
+        "constraint_percentages": [20, 40, 60, 80],
+        "constraint_size": [10, 15, 20],
+        "timeout": 360000
+    },
+
+    "N900": {
+        "num_instances": 6,
+        "num_resources": [900],
+        "constraint_percentages": [20, 40, 60, 80],
+        "constraint_size": [10, 15, 20],
+        "timeout": 360000
+    },
+
+    "N1000": {
+        "num_instances": 6,
+        "num_resources": [1000],
+        "constraint_percentages": [20, 40, 60, 80],
+        "constraint_size": [10, 15, 20],
+        "timeout": 360000
+    }
+}
