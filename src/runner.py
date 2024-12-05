@@ -208,11 +208,7 @@ def get_experiment_config_and_run_experiment(
             logger.error(f"An unexpected error occurred: {e}")
             sys.exit(1)
 
-        # rgp_instances = json_to_rgp(kwargs['existing_fp'])
-
-        # Temp Change
-        rgp_instances_temp = json_to_rgp(kwargs['existing_fp'])
-        rgp_instances = rgp_instances_temp[10:]
+        rgp_instances = json_to_rgp(kwargs['existing_fp'])
 
     else:
         flag, top_id = generate_rgp_instances_with_config(flag=2, experiment_config_path=f_path, job_id=job_id)
