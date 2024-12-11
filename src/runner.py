@@ -101,21 +101,25 @@ def cactus_plot(
     instances_solved2 = np.arange(1, len(filtered_times2) + 1)
 
     # Step 4: Plot the cactus plot for both encodings
-    plt.figure(figsize=(10, 6))
-    plt.plot(instances_solved1, cumulative_times1, marker='o', linestyle='-', color='b', label='Encoding 1')
-    plt.plot(instances_solved2, cumulative_times2, marker='s', linestyle='-', color='r', label='Encoding 2')
+    plt.figure(figsize=(8, 5))
+    plt.plot(instances_solved1, cumulative_times1, marker='o', linestyle='-', color='b', label='MAP')
+    plt.plot(instances_solved2, cumulative_times2, marker='s', linestyle='-', color='r', label='EQV')
 
     # Step 5: Labeling and title
-    plt.xlabel("Number of Solved Instances")
-    plt.ylabel("Total Execution Time (Seconds)")
-    plt.title("Cactus Plot of SAT Solver Performance")
+    plt.xlabel("Number of Solved Instances", fontsize=14)
+    plt.ylabel("Total Execution Time (Seconds)", fontsize=14)
+    plt.title("Cactus Plot of SAT Solver Performance", fontsize=16)
 
     ax = plt.gca()
     ax.xaxis.set_major_locator(MaxNLocator(integer=True))
     ax.yaxis.set_major_locator(MaxNLocator(integer=True))
 
     plt.grid(True)
-    plt.legend()
+    plt.legend(fontsize=12)
+
+    # Adjust tick label size
+    plt.xticks(fontsize=12)
+    plt.yticks(fontsize=12)
 
     target_dir = assets_dir
     image_dir = results_sub_dir
@@ -1025,35 +1029,35 @@ if __name__ == "__main__":
     csv_file_path_e2="/home/nvombat/Desktop/z3r0_7ru57/research/experiments/hpc/experiment3/concatenated_e2.csv"
 
     # Plot a cactus plot
-    # cactus_plot(use_csv=True, csv_file_path_e1=csv_file_path_e1, csv_file_path_e2=csv_file_path_e2)
+    cactus_plot(use_csv=True, csv_file_path_e1=csv_file_path_e1, csv_file_path_e2=csv_file_path_e2)
 
-    config_filename = "experiment_config_N10.json"
-    exp_config_path = get_file_path(data_dir, config_sub_dir, config_filename)
-    logger.info(f"Experiment Configuration Path: {exp_config_path}")
+    # config_filename = "experiment_config_N10.json"
+    # exp_config_path = get_file_path(data_dir, config_sub_dir, config_filename)
+    # logger.info(f"Experiment Configuration Path: {exp_config_path}")
 
-    existing_filename = "rgp_gen_exp_-1.json"
-    existing_fp = get_file_path(assets_dir, files_sub_dir, existing_filename)
-    logger.info(f"Existing File Path: {existing_fp}")
+    # existing_filename = "rgp_gen_exp_-1.json"
+    # existing_fp = get_file_path(assets_dir, files_sub_dir, existing_filename)
+    # logger.info(f"Existing File Path: {existing_fp}")
 
-    sat_obj_filename_e1 = "preprocessed_sat_obj_e1_N10.json"
-    sat_objects_e1_fp = get_file_path(assets_dir, files_sub_dir, sat_obj_filename_e1)
+    # sat_obj_filename_e1 = "preprocessed_sat_obj_e1_N10.json"
+    # sat_objects_e1_fp = get_file_path(assets_dir, files_sub_dir, sat_obj_filename_e1)
 
-    sat_obj_filename_e2 = "preprocessed_sat_obj_e2_N10.json"
-    sat_objects_e2_fp = get_file_path(assets_dir, files_sub_dir, sat_obj_filename_e2)
+    # sat_obj_filename_e2 = "preprocessed_sat_obj_e2_N10.json"
+    # sat_objects_e2_fp = get_file_path(assets_dir, files_sub_dir, sat_obj_filename_e2)
 
-    target_email = "testmail@test.com"
+    # target_email = "testmail@test.com"
 
-    get_experiment_config_and_run_experiment(
-        f_path=exp_config_path,
-        job_id=-1,
-        run_serially=False,
-        plot_results=True,
-        mail_results=True,
-        run_existing=False,
-        preprocess=False,
-        solve_preprocessed=False,
-        # existing_fp=existing_fp,
-        # target_email_addr=target_email,
-        # sat_obj_fp_e1=sat_objects_e1_fp,
-        # sat_obj_fp_e2=sat_objects_e2_fp
-    )
+    # get_experiment_config_and_run_experiment(
+    #     f_path=exp_config_path,
+    #     job_id=-1,
+    #     run_serially=False,
+    #     plot_results=True,
+    #     mail_results=True,
+    #     run_existing=False,
+    #     preprocess=False,
+    #     solve_preprocessed=False,
+    #     # existing_fp=existing_fp,
+    #     # target_email_addr=target_email,
+    #     # sat_obj_fp_e1=sat_objects_e1_fp,
+    #     # sat_obj_fp_e2=sat_objects_e2_fp
+    # )
