@@ -24,6 +24,8 @@
 
 ![image](./docs/equivalence_based_encoding.jpeg)
 
+Given an RGP instance, our tool ($ZeeTee$) determines whether there exists a grouping that satisfies all usability and security constraints. We first generate RGP instances using the experiment configuration specified by the user. We then use two encodings (Mapping-Based & Equivalence-Based) to convert the RGP instances to valid SAT instances. These SAT instances are then solved using SAT solvers. If the SAT instance is satisfiable, a valid grouping of the resources, satisfying all constraints, does exist and if the SAT instance is unsatisfiable, then a valid grouping satisfying all constraints does not exist. In this way, we can solve the Resource Grouping Problem (RGP).
+
 ## 📌 Prerequisites
 
 ### 💻 System requirement :
@@ -56,12 +58,11 @@ OR
 $ pip install -r requirements.txt
 ```
 
-If you do not wish to use poetry, you can convert the poetry.lock file to a requirements.txt file
+If you do not wish to use poetry, you can convert the poetry.lock file to a requirements.txt file and then install the necessary dependencies.
 
 ### 📝 Setup .env File :
 
-Refer to .env.example and create project secrets
-Setup Email API keys and Target Email ID
+Refer to .env.example and create project secrets. Setup Email API keys and Target Email ID
 
 ### 🔐 Setup Configuration Files :
 
@@ -73,7 +74,7 @@ $ FILENAME -> experiment_config_N700.json
 ```
 
 The number following N is the value of N (num_resources) in the experiment configuration file.
-All the configuration files used can be found in the /data/configfiles directory
+All the configuration files used can be found in the ```/data/configfiles``` directory
 
 You can refer to our Configuration Files when setting up your own.
 
@@ -89,19 +90,21 @@ $ 'constraint_size' [list] - Size of the set S in a constraint (S, op b)
 $ 'timeout' [int] - Timeout limit for the solver (in milliseconds)
 ```
 
+The information stored in a configuration file is eventually used by ```\src\generator.py``` to generate RGP instances.
+
 ### 🔐 Setup SLURM Files [For HPC] :
 
 SLURM Documentation can be found [here](https://slurm.schedmd.com/documentation.html).
 
 If an HPC setup is being used, then a SLURM file will have to be setup.
-All the SLURM files used can be found in the /data/slurm directory.
+All the SLURM files used can be found in the ```/data/slurm directory```.
 
 We have used 4 different types of slurm files based on what they do:
 
 ```
-$ TYPE 1 -> pre_process_N10.slurm
-$ TYPE 2 -> run_existing_N10.slurm
-$ TYPE 3 -> run_experiment_N10.slurm
+$ TYPE 1 -> run_existing_N10.slurm
+$ TYPE 2 -> run_experiment_N10.slurm
+$ TYPE 3 -> pre_process_N10.slurm
 $ TYPE 4 -> solve_preprocessed_N10.slurm
 ```
 
@@ -122,29 +125,30 @@ The project can be run in 4 different ways:
 ```
 $ ./run.sh arc_runner N10 0
 ```
-Run Exisiting: In this case the user must provide the path to a file containing RGP instances that have already been generated. That file will be used to then generate SAT instances which will be solved by a SAT solver.
+Run Exisiting (```TYPE 1```): In this case the user must provide the path to a file containing RGP instances that have already been generated. That file will be used to then generate SAT instances which will be solved by a SAT solver.
 
 ```
 $ ./run.sh arc_runner N10 1
 ```
-Preprocess & Solve: In this case the user must provide the path to a file containing the experiment configuration. This file is used to generate RGP instances which will th
+Preprocess & Solve (```TYPE 2```): In this case the user must provide the path to a file containing the experiment configuration. This file is used to generate RGP instances which will then be used to generate SAT instances. These instances will then be solved by a SAT solver.
 
 ```
 $ ./run.sh arc_runner N10 2
 ```
-Preprocess: In this case the user must provide the path to a file containing the experiment configuration and set the 'preprocess' flag to TRUE. This will enable the RGP instances to be converted to SAT instances which will be stored in json files. They will need to be solved separately
+Preprocess (```TYPE 3```): In this case the user must provide the path to a file containing the experiment configuration and set the 'preprocess' flag to TRUE. This will enable the RGP instances to be converted to SAT instances which will be stored in json files. They will need to be solved separately.
 
 ```
 $ ./run.sh arc_runner N10 3
 ```
-Solve Preprocessed: In this case the user will need to provide the paths to the preprocessed RGP instances (Stored SAT instances) and set the 'solve_preprocessed' flag to TRUE. This will enable the SAT instances to be solved directly from the JSON files where they were being stored
+Solve Preprocessed (```TYPE 4```): In this case the user will need to provide the paths to the preprocessed RGP instances (Stored SAT instances) and set the 'solve_preprocessed' flag to TRUE. This will enable the SAT instances to be solved directly from the JSON files where they were being stored.
 
-In addition to this the user is given a choice to:
+In addition to this, the user is given a choice to:
 
 ```
 $ Run the code in a serial or parallel manner
 $ Plot the results in the form of a Cactus Plot
 $ Mail the results to the user
+$ Use a custom SAT Solver
 ```
 
 ## 📄 Publication Details
