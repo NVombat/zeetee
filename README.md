@@ -151,6 +151,15 @@ $ Mail the results to the user
 $ Use a custom SAT Solver
 ```
 
+### 🗑️ Clean Up :
+
+Log and result files are generated as a result of running the project or an experiment. A cleanup script (```cleanup.sh```) is present to remove all these files. First convert the script to an executable format and then run the script to cleanup all the files that are generated.
+
+```
+$ chmod u+x cleanup.sh
+$ ./cleanup.sh
+```
+
 ## 📄 Publication Details
 
 [Nikhill Vombatkere; Philip W.L. Fong – “A Family of Zero-Trust Access Control Models and Automated Policy Formulation” – Submitted on 16 Dec 2024 to the 15th ACM Conference on Data and Application Security and Privacy (CODASPY) 2025](INSERT_DOI_HERE)
