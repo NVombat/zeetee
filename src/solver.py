@@ -24,7 +24,7 @@ def solve(enc_type: int, solver_flag: int, rgp_instance: dict) -> dict:
     Returns:
         dict: Result of the SAT Solver
     '''
-    logger.debug(f"RGP Instance: {inst}")
+    logger.debug(f"RGP Instance: {rgp_instance}")
 
     try:
         if enc_type not in range(1,3) or solver_flag not in range(1,3):

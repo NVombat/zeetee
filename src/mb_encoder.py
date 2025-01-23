@@ -1,3 +1,5 @@
+import os
+import sys
 import math
 from pysat.formula import CNF
 from pysat.card import CardEnc, EncType, NoSuchEncodingError
