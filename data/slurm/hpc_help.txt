@@ -1,0 +1,6 @@
+Commands:
+
+SUBMIT JOB USING SBATCH: sbatch script_name.slurm
+CHECK JOB STATUS FOR JOBS IN QUEUE: squeue -u username
+CANCEL JOB: scancel job_id
+CHECK JOB STATUS: scontrol show job job_id
