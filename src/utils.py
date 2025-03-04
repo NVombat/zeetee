@@ -17,7 +17,8 @@ def get_file_path(target_dir: str, foldername: str, filename: str) -> str:
     '''
     if not isinstance(target_dir, str) or target_dir not in ["data", "assets"]:
         # Cannot use logger due to circular import issue in /logger.py
-        logger.error("The Target Directory Must Be A String & Must Be Either 'data' or 'assets'!")
+        # logger.error("The Target Directory Must Be A String & Must Be Either 'data' or 'assets'!")
+        print("The Target Directory Must Be A String & Must Be Either 'data' or 'assets'!")
         sys.exit(1)
 
     # Get the directory of the current file
@@ -36,5 +37,5 @@ def get_file_path(target_dir: str, foldername: str, filename: str) -> str:
     return file_path
 
 
-if __name__ == "__main__":
-    logger.info("********************UTILS[LOCAL_TESTING]*********************")
+# if __name__ == "__main__":
+#     logger.info("********************UTILS[LOCAL_TESTING]*********************")
