@@ -11,6 +11,7 @@ import multiprocessing
 from pysat.formula import CNF
 import matplotlib.pyplot as plt
 from pysat.solvers import Solver
+import matplotlib.ticker as ticker
 from matplotlib.ticker import MaxNLocator
 
 from .utils import get_file_path
@@ -106,20 +107,39 @@ def cactus_plot(
     plt.plot(instances_solved2, cumulative_times2, marker='s', linestyle='-', color='r', label='EQV')
 
     # Step 5: Labeling and title
-    plt.xlabel("Number of Solved Instances", fontsize=14)
-    plt.ylabel("Total Execution Time (Seconds)", fontsize=14)
-    plt.title("Cactus Plot of SAT Solver Performance", fontsize=16)
+    # plt.xlabel("Number of Solved Instances", fontsize=14)
+    # plt.ylabel("Total Execution Time (Seconds)", fontsize=14)
+    # plt.title("Cactus Plot of SAT Solver Performance", fontsize=16)
 
+    # Improve Size
+    plt.xlabel("Number of Solved Instances", fontsize=18, weight='bold')
+    plt.ylabel("Total Execution Time (s)", fontsize=18, weight='bold')
+    plt.title("Cactus Plot of SAT Solver Performance", fontsize=20, weight='bold')
+
+    # ax = plt.gca()
+    # ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+    # ax.yaxis.set_major_locator(MaxNLocator(integer=True))
+
+    # Improve Size
     ax = plt.gca()
-    ax.xaxis.set_major_locator(MaxNLocator(integer=True))
-    ax.yaxis.set_major_locator(MaxNLocator(integer=True))
+    ax.tick_params(axis='both', which='major', labelsize=14)
+    ax.xaxis.set_major_locator(ticker.MultipleLocator(160))
+    ax.yaxis.set_major_locator(ticker.MultipleLocator(3000))
 
-    plt.grid(True)
-    plt.legend(fontsize=12)
+    # plt.grid(True)
+    # plt.legend(fontsize=12)
+
+    # Improve Size
+    plt.grid(True, which='major', linestyle='--', linewidth=0.5)
+    plt.legend(fontsize=14)
 
     # Adjust tick label size
-    plt.xticks(fontsize=12)
-    plt.yticks(fontsize=12)
+    # plt.xticks(fontsize=12)
+    # plt.yticks(fontsize=12)
+
+    # Improve Size
+    plt.xticks(fontsize=14)
+    plt.yticks(fontsize=14)
 
     target_dir = assets_dir
     image_dir = results_sub_dir
@@ -1024,9 +1044,13 @@ def solve_and_record_results_preprocessed(sat_objects: dict, encoding_type: str,
 if __name__ == "__main__":
     logger.info("********************RUNNER[LOCAL_TESTING]*********************")
 
-    # To use CSV file paths for Cactus Plot
-    csv_file_path_e1="/home/nvombat/Desktop/z3r0_7ru57/research/experiments/hpc/experiment3/concatenated_e1.csv"
-    csv_file_path_e2="/home/nvombat/Desktop/z3r0_7ru57/research/experiments/hpc/experiment3/concatenated_e2.csv"
+    # To use CSV file paths for Cactus Plot (LINUX)
+    # csv_file_path_e1="/home/nvombat/Desktop/z3r0_7ru57/research/experiments/hpc/experiment3/concatenated_e1.csv"
+    # csv_file_path_e2="/home/nvombat/Desktop/z3r0_7ru57/research/experiments/hpc/experiment3/concatenated_e2.csv"
+
+    # To use CSV file paths for Cactus Plot (MACOS)
+    csv_file_path_e1="/Users/nvombat/Desktop/z3r0_7ru57/research/experiments/hpc/experiment3/concatenated_e1.csv"
+    csv_file_path_e2="/Users/nvombat/Desktop/z3r0_7ru57/research/experiments/hpc/experiment3/concatenated_e2.csv"
 
     # Plot a cactus plot
     cactus_plot(use_csv=True, csv_file_path_e1=csv_file_path_e1, csv_file_path_e2=csv_file_path_e2)
