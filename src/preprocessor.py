@@ -1,3 +1,5 @@
+import sys
+
 from .utils import get_file_path
 from .logger import create_logger
 from .helper import write_to_file
