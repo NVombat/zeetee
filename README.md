@@ -162,4 +162,4 @@ $ ./cleanup.sh
 
 ## 📄 Publication Details
 
-[Nikhill Vombatkere; Philip W.L. Fong – “A Family of Zero-Trust Access Control Models and Automated Policy Formulation” – Submitted on 16 Dec 2024 to the 15th ACM Conference on Data and Application Security and Privacy (CODASPY) 2025](INSERT_DOI_HERE)
+[Nikhill Vombatkere; Philip W.L. Fong – “Zero Trust Continuous Authentication Models and Automated Policy Formulation” – Accepted on 29 Jul 2025 to the The Information Security Conference (ISC) 2025](INSERT_DOI_HERE)
